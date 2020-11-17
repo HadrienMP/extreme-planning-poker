@@ -11,9 +11,6 @@ let ballots = {}
 router.get('/', (req, res) => {
     res.render('index', {"nation": nation});
 });
-router.get('/test', (req, res) => {
-    res.render('test', {"nation": nation});
-});
 
 router.post('/enlist', (req, res) => {
     if (nation[req.body.id]) {
