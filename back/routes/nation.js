@@ -11,12 +11,11 @@ router.get('/', (req, res) => {
 
 router.post('/enlist', (req, res) => {
     let citizen = parseCitizen(req);
-    if (nation.isCitizen(citizen.id)) {
-        res.json({
+    if (nation.isCitizen(citizen.id) || nation.isNameTaken(citizen)) {
+        res.status(400).json({
             "status": 400,
             "reason": "Already enlisted citizen"
-        })
-        res.sendStatus(400)
+        }).end()
     } else {
         nation.enlist(citizen);
         bus.publish("enlisted", citizen)
