@@ -8,7 +8,7 @@ import Model.Nation as Nation exposing (Citizen)
 removeCitizen : Citizen -> Cmd Msg
 removeCitizen citizen =
     Http.post
-    { url = "/citizen/leave"
+    { url = "/nation/leave"
     , body = Http.jsonBody (Nation.encodeCitizen citizen)
     , expect = Http.expectWhatever CmdResp
     }
