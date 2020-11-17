@@ -25,7 +25,7 @@ update msg model =
 
 serverEnlist : Citizen -> Cmd Msg
 serverEnlist citizen = Http.post
-    { url = "/enlist"
+    { url = "/nation/enlist"
     , body = Http.jsonBody (Nation.encodeCitizen citizen)
     , expect = Http.expectWhatever CmdResp
     }

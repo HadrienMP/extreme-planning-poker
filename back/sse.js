@@ -16,7 +16,7 @@ exports.init = (req, res) => {
 }
 
 
-exports.send = (data, event) => {
+module.exports.send = (data, event) => {
     let eventSse = ``;
     if (event) {
         eventSse = `event: ${event}\n`;
