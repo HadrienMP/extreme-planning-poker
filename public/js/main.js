@@ -11591,7 +11591,7 @@ var $author$project$Common$removeCitizen = function (citizen) {
 			body: $elm$http$Http$jsonBody(
 				$author$project$Model$Nation$encodeCitizen(citizen)),
 			expect: $elm$http$Http$expectWhatever($author$project$Messages$CmdResp),
-			url: '/citizen/leave'
+			url: '/nation/leave'
 		});
 };
 var $author$project$Model$Nation$remove = F2(

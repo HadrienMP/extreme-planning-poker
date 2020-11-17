@@ -6,6 +6,9 @@ exports.init = (req, res) => {
         'Cache-Control': 'no-cache'
     };
     res.writeHead(200, headers);
+
+    setInterval(() => res.write("event: ping\ndata: stay alive\n\n"), 3000);
+
     const clientId = Date.now();
     const newClient = {id: clientId, res};
     clients.push(newClient);
