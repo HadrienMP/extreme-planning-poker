@@ -1,0 +1,13 @@
+extends layout
+
+block head
+    script(src="/js/test.js")
+
+block content
+    div#myapp
+    script.
+        const app = Elm.Test.init({node: document.getElementById('myapp')})
+        const evtSource = new EventSource("/sse");
+        evtSource.addEventListener("enlisted", evt => {
+            app.ports.messageReceiver.send(JSON.parse(evt.data));
+        });

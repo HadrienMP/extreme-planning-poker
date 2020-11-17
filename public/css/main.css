@@ -1,0 +1,127 @@
+/*
+  elm-hot creates an additional div wrapper around the app to make HMR possible.
+  This could break styling in development mode if you are using Elm UI.
+
+  More context in the issue:
+    https://github.com/halfzebra/create-elm-app/issues/320
+*/
+[data-elm-hot="true"] {
+  height: inherit;
+}
+
+body {
+  font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
+  margin: 0;
+  text-align: center;
+  color: #293c4b;
+}
+
+h1 {
+  font-size: 30px;
+}
+
+img {
+  margin: 20px 0;
+  max-width: 200px;
+}
+
+button {
+  border-radius: 0;
+  background: #0088ff;
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 9px 15px;
+  cursor: pointer;
+}
+input {
+  border: 1px solid #0088ff;
+  border-radius: 0;
+  padding: 8px;
+}
+
+#nation {
+  margin-top: 20px;
+}
+
+#nation .citizen {
+  display: inline-block;
+  margin-right: 10px;
+}
+#nation .citizen > p {
+  margin-bottom: 10px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 150px;
+  word-break: inherit;
+  white-space: pre;
+}
+
+#nation button, #nation .slot {
+  width: 80px;
+  height: 120px;
+  border-radius: 10px;
+  vertical-align: middle;
+  display: inline-block;
+  font-size: 1em;
+  box-sizing: border-box;
+}
+
+#nation .citizen .slot {
+  border: 1px dashed;
+  color: #0088ff;
+}
+
+#nation .citizen .slot.full {
+  border: solid 5px;
+  background: repeating-linear-gradient(
+          45deg,
+          white,
+          white 10px,
+          #0088ff 10px,
+          #0088ff 20px
+  );
+}
+
+#deck {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  right: 0;
+}
+
+#deck .card {
+  margin-right: 10px;
+  font-size: 1em;
+}
+
+.card {
+  width: 80px;
+  height: 120px;
+  border: solid 5px;
+  border-radius: 10px;
+  cursor: pointer;
+  background: repeating-linear-gradient(
+          -45deg,
+          white,
+          white 10px,
+          #f9f9f9 10px,
+          #f9f9f9 20px
+  );
+  color: #0088ff;
+  vertical-align: middle;
+}
+
+#nation button i, .card i {
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+
+#deck .card.selected {
+  position: relative;
+  top: -10px;
+}
+
+p {
+  margin: 0;
+}
