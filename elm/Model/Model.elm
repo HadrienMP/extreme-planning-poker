@@ -47,6 +47,9 @@ updateName context name = { context | updatedName = name }
 enlist : Context -> Citizen -> Context
 enlist context citizen = { context | nation = Nation.enlist citizen context.nation }
 
+removeCitizen : Context -> Citizen -> Context
+removeCitizen context citizen = { context | nation = Nation.remove citizen context.nation }
+
 updateNation : Context -> Nation -> Context
 updateNation context nation = { context | nation = nation }
 

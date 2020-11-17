@@ -18,6 +18,9 @@ empty = Dict.fromList []
 enlist : Citizen -> Nation -> Nation
 enlist citizen nation = Dict.insert citizen.id citizen nation
 
+remove : Citizen -> Nation -> Nation
+remove citizen nation = Dict.remove citizen.id nation
+
 rename : CitizenId -> String -> Nation -> Nation
 rename id name nation = Dict.update id (\_ -> Just (Citizen id name)) nation
 

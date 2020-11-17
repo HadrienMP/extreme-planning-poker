@@ -6,7 +6,7 @@ import Json.Decode
 import Messages exposing (Msg(..))
 import Model.Ballots as Ballots
 import Model.Model as Model exposing (Context, Model(..))
-import Model.Nation as Nation
+import Model.Nation as Nation exposing (Citizen)
 import OtherHtml exposing (enlistForm)
 import Random
 import Sse exposing (EventKind)
@@ -55,6 +55,8 @@ dispatch event =
         "voteCancelled" -> Sse.decodeData Nation.citizenDecoder event |> Result.map VoteCancelled
         "pollClosed" -> Ok PollCLosed
         "pollStarted" -> Ok PollStarted
+        "leaving" -> Ok Leaving
+        "citizenLeft" -> Sse.decodeData Nation.citizenDecoder event |> Result.map CitizenLeft
         _ -> Err ("Unknown event type: " ++ event.kind)
 
 

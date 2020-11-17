@@ -1,4 +1,5 @@
 module Workflow.Closed exposing (..)
+import Common
 import Http
 import Model.Ballots as Ballots exposing (Ballots)
 import Model.Deck as Deck exposing (Card, Deck)
@@ -18,6 +19,10 @@ update msg model =
     case model of
         Closed context ->
             case msg of
+                Leaving -> (model, Common.removeCitizen context.me)
+                CitizenLeft citizen ->
+                    ( Closed (Model.removeCitizen context citizen)
+                    , Cmd.none )
                 Start -> (model, start)
                 PollStarted ->
                     ( Open ( Model.OpenModel (Model.reset context) Nothing)

@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "build": "npm run elm",
     "start": "node ./bin/www",
-    "elm": "elm-live ./elm/Main.elm --output=./public/js/main.js --optimize",
+    "elm": "elm make ./elm/Main.elm --output=./public/js/main.js",
     "dev": "concurrently --kill-others \"npm run node-live\" \"npm run elm-live\"",
     "node-live": "nodemon ./bin/www",
     "elm-live": "elm-live ./elm/Main.elm --dir=./public/js --no-server -- --output=./public/js/main.js --debug"

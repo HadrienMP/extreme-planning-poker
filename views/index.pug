@@ -13,3 +13,7 @@ block content
             console.log(event);
             app.ports.messageReceiver.send([event.name, event.data]);
         };
+        window.onbeforeunload = () => {
+            app.ports.messageReceiver.send(["leaving", {}]);
+            return false;
+        }

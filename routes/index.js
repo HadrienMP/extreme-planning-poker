@@ -29,6 +29,12 @@ router.post('/enlist', (req, res) => {
     }
 });
 
+router.post('/citizen/remove', (req, res) => {
+    delete nation[req.body.id]
+    delete ballots[req.body.id]
+    eventQueue.emit("send", {name: "citizenLeft", data: {"id": req.body.id, "name": req.body.name}})
+});
+
 router.get('/nation', (req, res) => {
     res.json(nation);
 });

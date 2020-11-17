@@ -25,3 +25,6 @@ type Msg
     | PollCLosed
     | Start
     | PollStarted
+
+    | Leaving
+    | CitizenLeft Citizen

@@ -1,5 +1,6 @@
 module Workflow.Open exposing (..)
 
+import Common
 import Http
 import Model.Ballots as Ballots exposing (Ballot, hasVoted, Ballots)
 import Html.Events exposing (onClick)
@@ -24,6 +25,10 @@ update msg model =
     case model of
         Model.Open open ->
             case msg of
+                Leaving -> (model, Common.removeCitizen open.context.me)
+                CitizenLeft citizen ->
+                    ( Model.Open { open | context = Model.removeCitizen open.context citizen }
+                    , Cmd.none )
                 UpdateName _ ->
                     ( Debug.todo "Allow users to change their name"
                     , Cmd.none )
