@@ -7,7 +7,7 @@ const bus = require('../eventBus');
 const hash = require("sha1")
 
 router.get('/', (req, res) => {
-    res.json(nation.all());
+    res.json(state());
 });
 
 router.post('/enlist', (req, res) => {
@@ -24,6 +24,11 @@ router.post('/enlist', (req, res) => {
     }
 });
 
+const state = () => ({
+    nation: nation.all(),
+    ballots: ballots.all()
+});
+
 router.post('/alive', (req, res) => {
     let citizen = parseCitizen(req.body.citizen);
     if (!nation.isCitizen(citizen.id)) {
@@ -33,10 +38,7 @@ router.post('/alive', (req, res) => {
         }).end()
     } else {
         if (req.body.footprint !== footprint()) {
-            bus.publish("sync", {
-                nation: nation.all(),
-                ballots: ballots.all()
-            });
+            bus.publish("sync", state());
         }
         nation.alive(citizen);
         res.sendStatus(200)

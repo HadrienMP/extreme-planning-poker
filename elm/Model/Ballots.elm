@@ -46,13 +46,10 @@ encode ballot =
         ]
 
 decoder : Decode.Decoder Ballots
-decoder = Decode.dict cardCodeDecoder
+decoder = Decode.dict Decode.string
 
 ballotDecoder : Decode.Decoder Ballot
-ballotDecoder = Decode.map2 Ballot (Decode.field "citizen" Decode.string) cardCodeDecoder
-
-cardCodeDecoder : Decode.Decoder CardCode
-cardCodeDecoder = (Decode.field "cardCode" Decode.string)
+ballotDecoder = Decode.map2 Ballot (Decode.field "citizen" Decode.string) (Decode.field "cardCode" Decode.string)
 
 footprint : Ballots -> SHA1.Digest
 footprint ballots =

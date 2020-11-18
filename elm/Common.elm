@@ -2,8 +2,10 @@ module Common exposing (..)
 
 
 import Http
+import Json.Decode
 import Json.Encode
 import Messages exposing (Msg(..))
+import Model.Ballots as Ballots
 import Model.Model as Model exposing (..)
 import Model.Nation as Nation exposing (Citizen)
 import SHA1
@@ -23,3 +25,10 @@ heartbeat context = Json.Encode.object
                     |> SHA1.toHex
                     |> Json.Encode.string)
     ]
+
+stateDecoder : Json.Decode.Decoder Messages.State
+stateDecoder =
+    Json.Decode.map2
+        Messages.State
+        (Json.Decode.field "nation" Nation.decoder)
+        (Json.Decode.field "ballots" Ballots.decoder)

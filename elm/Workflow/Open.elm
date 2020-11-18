@@ -25,8 +25,8 @@ update : Msg -> Model.OpenModel -> (Model, Cmd Msg)
 update msg open =
     case msg of
         Tick _ -> (Model.Open open, Common.sendHeartbeat open.context)
-        Sync sync ->
-            ( Model.Open { open | context = Model.sync sync open.context }
+        Sync state ->
+            ( Model.Open { open | context = Model.sync state open.context }
             , Cmd.none )
         CitizenLeft citizen ->
             if citizen == open.context.me then
@@ -40,13 +40,13 @@ update msg open =
         Enlisted citizen ->
             ( Model.Open { open | context = Model.enlist open.context citizen }
             , Cmd.none )
-        NationUpdated nationResponse ->
-            case nationResponse of
+        StateResponse stateResponse ->
+            case stateResponse of
                 Err e ->
                     ( Debug.log (Tools.httpErrorToString e) (Model.Open open)
                     , Cmd.none )
-                Ok nation ->
-                    ( Model.Open { open | context = Model.updateNation open.context nation }
+                Ok state ->
+                    ( Model.Open { open | context = Model.sync state open.context }
                     , Cmd.none )
         Vote newBallot ->
             ( Model.Open { open | ballot = Just newBallot }

@@ -5,11 +5,16 @@ import Model.Ballots exposing (Ballot, Ballots)
 import Model.Nation exposing (Citizen, Nation)
 import Time
 
+type alias State =
+    { nation: Nation
+    , ballots : Ballots
+    }
+
 type Msg
     = Error String
     | CmdResp (Result Http.Error ())
     | Tick Time.Posix
-    | Sync (Nation, Ballots)
+    | Sync State
 
     | UpdateName String
     | GeneratedId String
@@ -17,8 +22,7 @@ type Msg
     | Enlist
     | Enlisted Citizen
 
-
-    | NationUpdated (Result Http.Error Nation)
+    | StateResponse (Result Http.Error State)
     | Vote Ballot
     | VoteAccepted Ballot
     | Cancel Citizen

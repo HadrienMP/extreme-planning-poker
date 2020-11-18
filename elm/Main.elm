@@ -1,6 +1,7 @@
 port module Main exposing (..)
 
 import Browser
+import Common
 import Html exposing (..)
 import Json.Decode
 import Messages exposing (Msg(..))
@@ -61,15 +62,8 @@ dispatch event =
         "pollClosed" -> Ok PollCLosed
         "pollStarted" -> Ok PollStarted
         "citizenLeft" -> Sse.decodeData Nation.citizenDecoder event |> Result.map CitizenLeft
-        "sync" -> Sse.decodeData syncDecoder event |> Result.map Sync
+        "sync" -> Sse.decodeData Common.stateDecoder event |> Result.map Sync
         _ -> Err ("Unknown event type: " ++ event.kind)
-
-syncDecoder : Json.Decode.Decoder (Nation, Ballots)
-syncDecoder =
-    Json.Decode.map2
-        (\a b -> (a, b))
-        (Json.Decode.field "nation" Nation.decoder)
-        (Json.Decode.field "ballots" Ballots.decoder)
 
 -- VIEW
 view : Model -> Html Msg

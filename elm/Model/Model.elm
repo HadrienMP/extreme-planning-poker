@@ -1,5 +1,6 @@
 module Model.Model exposing (..)
 
+import Messages exposing (State)
 import Model.Ballots as Ballots exposing (Ballot, Ballots)
 import Model.Deck exposing (Deck)
 import Model.Decks as Decks
@@ -26,11 +27,11 @@ type Model
 
 
 
-sync : (Nation, Ballots) -> Context -> Context
-sync (nation, ballots) context =
+sync : State -> Context -> Context
+sync state context =
     { context
-    | nation = nation
-    , ballots = ballots
+    | nation = state.nation
+    , ballots = state.ballots
     }
 
 footprint : Context -> SHA1.Digest

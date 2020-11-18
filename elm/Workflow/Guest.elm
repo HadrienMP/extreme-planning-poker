@@ -1,4 +1,5 @@
 module Workflow.Guest exposing (..)
+import Common
 import Messages exposing (Msg(..))
 import Model.Ballots as Ballots
 import Model.Decks as Decks
@@ -37,5 +38,5 @@ serverEnlist citizen = Http.post
 loadNation : Cmd Msg
 loadNation = Http.get
     { url = "/nation"
-    , expect = Http.expectJson NationUpdated Nation.decoder
+    , expect = Http.expectJson StateResponse Common.stateDecoder
     }
