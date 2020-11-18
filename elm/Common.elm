@@ -5,10 +5,11 @@ import Http
 import Messages exposing (Msg(..))
 import Model.Nation as Nation exposing (Citizen)
 
-removeCitizen : Citizen -> Cmd Msg
-removeCitizen citizen =
+sendHeartbeat : Citizen -> Cmd Msg
+sendHeartbeat citizen =
     Http.post
-    { url = "/nation/leave"
+    { url = "/nation/alive"
     , body = Http.jsonBody (Nation.encodeCitizen citizen)
     , expect = Http.expectWhatever CmdResp
     }
+

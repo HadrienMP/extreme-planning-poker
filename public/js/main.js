@@ -11176,6 +11176,176 @@ var $author$project$Main$init = function (_v0) {
 		A2($author$project$Model$Model$Guest, '', ''),
 		A2($elm$random$Random$generate, $author$project$Messages$GeneratedId, $author$project$Tools$uuid));
 };
+var $author$project$Messages$Tick = function (a) {
+	return {$: 'Tick', a: a};
+};
+var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $elm$time$Time$Every = F2(
+	function (a, b) {
+		return {$: 'Every', a: a, b: b};
+	});
+var $elm$time$Time$State = F2(
+	function (taggers, processes) {
+		return {processes: processes, taggers: taggers};
+	});
+var $elm$time$Time$init = $elm$core$Task$succeed(
+	A2($elm$time$Time$State, $elm$core$Dict$empty, $elm$core$Dict$empty));
+var $elm$time$Time$addMySub = F2(
+	function (_v0, state) {
+		var interval = _v0.a;
+		var tagger = _v0.b;
+		var _v1 = A2($elm$core$Dict$get, interval, state);
+		if (_v1.$ === 'Nothing') {
+			return A3(
+				$elm$core$Dict$insert,
+				interval,
+				_List_fromArray(
+					[tagger]),
+				state);
+		} else {
+			var taggers = _v1.a;
+			return A3(
+				$elm$core$Dict$insert,
+				interval,
+				A2($elm$core$List$cons, tagger, taggers),
+				state);
+		}
+	});
+var $elm$core$Process$kill = _Scheduler_kill;
+var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var $elm$time$Time$setInterval = _Time_setInterval;
+var $elm$core$Process$spawn = _Scheduler_spawn;
+var $elm$time$Time$spawnHelp = F3(
+	function (router, intervals, processes) {
+		if (!intervals.b) {
+			return $elm$core$Task$succeed(processes);
+		} else {
+			var interval = intervals.a;
+			var rest = intervals.b;
+			var spawnTimer = $elm$core$Process$spawn(
+				A2(
+					$elm$time$Time$setInterval,
+					interval,
+					A2($elm$core$Platform$sendToSelf, router, interval)));
+			var spawnRest = function (id) {
+				return A3(
+					$elm$time$Time$spawnHelp,
+					router,
+					rest,
+					A3($elm$core$Dict$insert, interval, id, processes));
+			};
+			return A2($elm$core$Task$andThen, spawnRest, spawnTimer);
+		}
+	});
+var $elm$time$Time$onEffects = F3(
+	function (router, subs, _v0) {
+		var processes = _v0.processes;
+		var rightStep = F3(
+			function (_v6, id, _v7) {
+				var spawns = _v7.a;
+				var existing = _v7.b;
+				var kills = _v7.c;
+				return _Utils_Tuple3(
+					spawns,
+					existing,
+					A2(
+						$elm$core$Task$andThen,
+						function (_v5) {
+							return kills;
+						},
+						$elm$core$Process$kill(id)));
+			});
+		var newTaggers = A3($elm$core$List$foldl, $elm$time$Time$addMySub, $elm$core$Dict$empty, subs);
+		var leftStep = F3(
+			function (interval, taggers, _v4) {
+				var spawns = _v4.a;
+				var existing = _v4.b;
+				var kills = _v4.c;
+				return _Utils_Tuple3(
+					A2($elm$core$List$cons, interval, spawns),
+					existing,
+					kills);
+			});
+		var bothStep = F4(
+			function (interval, taggers, id, _v3) {
+				var spawns = _v3.a;
+				var existing = _v3.b;
+				var kills = _v3.c;
+				return _Utils_Tuple3(
+					spawns,
+					A3($elm$core$Dict$insert, interval, id, existing),
+					kills);
+			});
+		var _v1 = A6(
+			$elm$core$Dict$merge,
+			leftStep,
+			bothStep,
+			rightStep,
+			newTaggers,
+			processes,
+			_Utils_Tuple3(
+				_List_Nil,
+				$elm$core$Dict$empty,
+				$elm$core$Task$succeed(_Utils_Tuple0)));
+		var spawnList = _v1.a;
+		var existingDict = _v1.b;
+		var killTask = _v1.c;
+		return A2(
+			$elm$core$Task$andThen,
+			function (newProcesses) {
+				return $elm$core$Task$succeed(
+					A2($elm$time$Time$State, newTaggers, newProcesses));
+			},
+			A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					return A3($elm$time$Time$spawnHelp, router, spawnList, existingDict);
+				},
+				killTask));
+	});
+var $elm$time$Time$onSelfMsg = F3(
+	function (router, interval, state) {
+		var _v0 = A2($elm$core$Dict$get, interval, state.taggers);
+		if (_v0.$ === 'Nothing') {
+			return $elm$core$Task$succeed(state);
+		} else {
+			var taggers = _v0.a;
+			var tellTaggers = function (time) {
+				return $elm$core$Task$sequence(
+					A2(
+						$elm$core$List$map,
+						function (tagger) {
+							return A2(
+								$elm$core$Platform$sendToApp,
+								router,
+								tagger(time));
+						},
+						taggers));
+			};
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v1) {
+					return $elm$core$Task$succeed(state);
+				},
+				A2($elm$core$Task$andThen, tellTaggers, $elm$time$Time$now));
+		}
+	});
+var $elm$time$Time$subMap = F2(
+	function (f, _v0) {
+		var interval = _v0.a;
+		var tagger = _v0.b;
+		return A2(
+			$elm$time$Time$Every,
+			interval,
+			A2($elm$core$Basics$composeL, f, tagger));
+	});
+_Platform_effectManagers['Time'] = _Platform_createManager($elm$time$Time$init, $elm$time$Time$onEffects, $elm$time$Time$onSelfMsg, 0, $elm$time$Time$subMap);
+var $elm$time$Time$subscription = _Platform_leaf('Time');
+var $elm$time$Time$every = F2(
+	function (interval, tagger) {
+		return $elm$time$Time$subscription(
+			A2($elm$time$Time$Every, interval, tagger));
+	});
 var $author$project$Messages$Error = function (a) {
 	return {$: 'Error', a: a};
 };
@@ -11185,7 +11355,6 @@ var $author$project$Messages$CitizenLeft = function (a) {
 var $author$project$Messages$Enlisted = function (a) {
 	return {$: 'Enlisted', a: a};
 };
-var $author$project$Messages$Leaving = {$: 'Leaving'};
 var $author$project$Messages$PollCLosed = {$: 'PollCLosed'};
 var $author$project$Messages$PollStarted = {$: 'PollStarted'};
 var $author$project$Messages$VoteAccepted = function (a) {
@@ -11263,8 +11432,6 @@ var $author$project$Main$dispatch = function (event) {
 			return $elm$core$Result$Ok($author$project$Messages$PollCLosed);
 		case 'pollStarted':
 			return $elm$core$Result$Ok($author$project$Messages$PollStarted);
-		case 'leaving':
-			return $elm$core$Result$Ok($author$project$Messages$Leaving);
 		case 'citizenLeft':
 			return A2(
 				$elm$core$Result$map,
@@ -11284,6 +11451,24 @@ var $author$project$Tools$fold = F3(
 			return successF(success);
 		}
 	});
+var $author$project$Sse$Event = F2(
+	function (kind, data) {
+		return {data: data, kind: kind};
+	});
+var $author$project$Sse$through = F2(
+	function (dispatchF, _v0) {
+		var kind = _v0.a;
+		var data = _v0.b;
+		return dispatchF(
+			A2($author$project$Sse$Event, kind, data));
+	});
+var $author$project$Main$handleEvent = function (event) {
+	return A3(
+		$author$project$Tools$fold,
+		$author$project$Messages$Error,
+		$elm$core$Basics$identity,
+		A2($author$project$Sse$through, $author$project$Main$dispatch, event));
+};
 var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$json$Json$Decode$index = _Json_decodeIndex;
 var $author$project$Main$messageReceiver = _Platform_incomingPort(
@@ -11300,26 +11485,13 @@ var $author$project$Main$messageReceiver = _Platform_incomingPort(
 				A2($elm$json$Json$Decode$index, 1, $elm$json$Json$Decode$value));
 		},
 		A2($elm$json$Json$Decode$index, 0, $elm$json$Json$Decode$string)));
-var $author$project$Sse$Event = F2(
-	function (kind, data) {
-		return {data: data, kind: kind};
-	});
-var $author$project$Sse$through = F2(
-	function (dispatchF, _v0) {
-		var kind = _v0.a;
-		var data = _v0.b;
-		return dispatchF(
-			A2($author$project$Sse$Event, kind, data));
-	});
 var $author$project$Main$subscriptions = function (_v0) {
-	return $author$project$Main$messageReceiver(
-		function (event) {
-			return A3(
-				$author$project$Tools$fold,
-				$author$project$Messages$Error,
-				$elm$core$Basics$identity,
-				A2($author$project$Sse$through, $author$project$Main$dispatch, event));
-		});
+	return $elm$core$Platform$Sub$batch(
+		_List_fromArray(
+			[
+				$author$project$Main$messageReceiver($author$project$Main$handleEvent),
+				A2($elm$time$Time$every, 1000, $author$project$Messages$Tick)
+			]));
 };
 var $elm$core$Debug$log = _Debug_log;
 var $author$project$Model$Model$Closed = function (a) {
@@ -11332,6 +11504,24 @@ var $author$project$Model$Model$OpenModel = F2(
 	function (context, ballot) {
 		return {ballot: ballot, context: context};
 	});
+var $author$project$Model$Nation$remove = F2(
+	function (citizen, nation) {
+		return A2($elm$core$Dict$remove, citizen.id, nation);
+	});
+var $author$project$Model$Model$removeCitizen = F2(
+	function (context, citizen) {
+		return _Utils_update(
+			context,
+			{
+				nation: A2($author$project$Model$Nation$remove, citizen, context.nation)
+			});
+	});
+var $author$project$Model$Ballots$empty = $elm$core$Dict$fromList(_List_Nil);
+var $author$project$Model$Model$reset = function (context) {
+	return _Utils_update(
+		context,
+		{ballots: $author$project$Model$Ballots$empty});
+};
 var $author$project$Messages$CmdResp = function (a) {
 	return {$: 'CmdResp', a: a};
 };
@@ -11373,7 +11563,6 @@ var $elm$core$Maybe$isJust = function (maybe) {
 		return false;
 	}
 };
-var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
 var $elm$http$Http$expectBytesResponse = F2(
 	function (toMsg, toResult) {
 		return A3(
@@ -11440,8 +11629,6 @@ var $elm$http$Http$State = F2(
 	});
 var $elm$http$Http$init = $elm$core$Task$succeed(
 	A2($elm$http$Http$State, $elm$core$Dict$empty, _List_Nil));
-var $elm$core$Process$kill = _Scheduler_kill;
-var $elm$core$Process$spawn = _Scheduler_spawn;
 var $elm$http$Http$updateReqs = F3(
 	function (router, cmds, reqs) {
 		updateReqs:
@@ -11585,32 +11772,14 @@ var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
 		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Common$removeCitizen = function (citizen) {
+var $author$project$Common$sendHeartbeat = function (citizen) {
 	return $elm$http$Http$post(
 		{
 			body: $elm$http$Http$jsonBody(
 				$author$project$Model$Nation$encodeCitizen(citizen)),
 			expect: $elm$http$Http$expectWhatever($author$project$Messages$CmdResp),
-			url: '/nation/leave'
+			url: '/nation/alive'
 		});
-};
-var $author$project$Model$Nation$remove = F2(
-	function (citizen, nation) {
-		return A2($elm$core$Dict$remove, citizen.id, nation);
-	});
-var $author$project$Model$Model$removeCitizen = F2(
-	function (context, citizen) {
-		return _Utils_update(
-			context,
-			{
-				nation: A2($author$project$Model$Nation$remove, citizen, context.nation)
-			});
-	});
-var $author$project$Model$Ballots$empty = $elm$core$Dict$fromList(_List_Nil);
-var $author$project$Model$Model$reset = function (context) {
-	return _Utils_update(
-		context,
-		{ballots: $author$project$Model$Ballots$empty});
 };
 var $elm$http$Http$emptyBody = _Http_emptyBody;
 var $author$project$Workflow$Closed$start = $elm$http$Http$post(
@@ -11624,13 +11793,15 @@ var $author$project$Workflow$Closed$update = F2(
 		if (model.$ === 'Closed') {
 			var context = model.a;
 			switch (msg.$) {
-				case 'Leaving':
+				case 'Tick':
 					return _Utils_Tuple2(
 						model,
-						$author$project$Common$removeCitizen(context.me));
+						$author$project$Common$sendHeartbeat(context.me));
 				case 'CitizenLeft':
 					var citizen = msg.a;
-					return _Utils_Tuple2(
+					return _Utils_eq(citizen, context.me) ? _Utils_Tuple2(
+						A2($author$project$Model$Model$Guest, '', ''),
+						$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 						$author$project$Model$Model$Closed(
 							A2($author$project$Model$Model$removeCitizen, context, citizen)),
 						$elm$core$Platform$Cmd$none);
@@ -11790,6 +11961,22 @@ var $author$project$Model$Model$enlist = F2(
 				nation: A2($author$project$Model$Nation$enlist, citizen, context.nation)
 			});
 	});
+var $author$project$Tools$httpErrorToString = function (error) {
+	switch (error.$) {
+		case 'BadUrl':
+			var msg = error.a;
+			return msg;
+		case 'Timeout':
+			return 'timeout';
+		case 'NetworkError':
+			return 'network error';
+		case 'BadStatus':
+			return 'Bad status';
+		default:
+			var msg = error.a;
+			return msg;
+	}
+};
 var $elm$core$Debug$todo = _Debug_todo;
 var $author$project$Model$Model$updateNation = F2(
 	function (context, nation) {
@@ -11835,13 +12022,15 @@ var $author$project$Workflow$Open$update = F2(
 		if (model.$ === 'Open') {
 			var open = model.a;
 			switch (msg.$) {
-				case 'Leaving':
+				case 'Tick':
 					return _Utils_Tuple2(
 						model,
-						$author$project$Common$removeCitizen(open.context.me));
+						$author$project$Common$sendHeartbeat(open.context.me));
 				case 'CitizenLeft':
 					var citizen = msg.a;
-					return _Utils_Tuple2(
+					return _Utils_eq(citizen, open.context.me) ? _Utils_Tuple2(
+						A2($author$project$Model$Model$Guest, '', ''),
+						$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 						$author$project$Model$Model$Open(
 							_Utils_update(
 								open,
@@ -11854,8 +12043,8 @@ var $author$project$Workflow$Open$update = F2(
 						_Debug_todo(
 							'Workflow.Open',
 							{
-								start: {line: 33, column: 23},
-								end: {line: 33, column: 33}
+								start: {line: 37, column: 23},
+								end: {line: 37, column: 33}
 							})('Allow users to change their name'),
 						$elm$core$Platform$Cmd$none);
 				case 'Enlisted':
@@ -11871,13 +12060,12 @@ var $author$project$Workflow$Open$update = F2(
 				case 'NationUpdated':
 					var nationResponse = msg.a;
 					if (nationResponse.$ === 'Err') {
+						var e = nationResponse.a;
 						return _Utils_Tuple2(
-							_Debug_todo(
-								'Workflow.Open',
-								{
-									start: {line: 41, column: 31},
-									end: {line: 41, column: 41}
-								})('Handle nation updated error cases'),
+							A2(
+								$elm$core$Debug$log,
+								$author$project$Tools$httpErrorToString(e),
+								model),
 							$elm$core$Platform$Cmd$none);
 					} else {
 						var nation = nationResponse.a;
@@ -12378,4 +12566,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Messages.Msg","aliases":{"Model.Ballots.Ballot":{"args":[],"type":"{ citizen : Model.Nation.CitizenId, cardCode : Model.Deck.CardCode }"},"Model.Deck.CardCode":{"args":[],"type":"String.String"},"Model.Nation.Citizen":{"args":[],"type":"{ id : Model.Nation.CitizenId, name : String.String }"},"Model.Nation.CitizenId":{"args":[],"type":"String.String"},"Model.Nation.Nation":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Nation.Citizen"}},"unions":{"Messages.Msg":{"args":[],"tags":{"Error":["String.String"],"CmdResp":["Result.Result Http.Error ()"],"UpdateName":["String.String"],"GeneratedId":["String.String"],"Enlist":[],"Enlisted":["Model.Nation.Citizen"],"NationUpdated":["Result.Result Http.Error Model.Nation.Nation"],"Vote":["Model.Ballots.Ballot"],"VoteAccepted":["Model.Ballots.Ballot"],"Cancel":["Model.Nation.Citizen"],"VoteCancelled":["Model.Nation.Citizen"],"Close":[],"PollCLosed":[],"Start":[],"PollStarted":[],"Leaving":[],"CitizenLeft":["Model.Nation.Citizen"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Dict.NColor":{"args":[],"tags":{"Red":[],"Black":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Messages.Msg","aliases":{"Model.Ballots.Ballot":{"args":[],"type":"{ citizen : Model.Nation.CitizenId, cardCode : Model.Deck.CardCode }"},"Model.Deck.CardCode":{"args":[],"type":"String.String"},"Model.Nation.Citizen":{"args":[],"type":"{ id : Model.Nation.CitizenId, name : String.String }"},"Model.Nation.CitizenId":{"args":[],"type":"String.String"},"Model.Nation.Nation":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Nation.Citizen"}},"unions":{"Messages.Msg":{"args":[],"tags":{"Error":["String.String"],"CmdResp":["Result.Result Http.Error ()"],"Tick":["Time.Posix"],"UpdateName":["String.String"],"GeneratedId":["String.String"],"Enlist":[],"Enlisted":["Model.Nation.Citizen"],"NationUpdated":["Result.Result Http.Error Model.Nation.Nation"],"Vote":["Model.Ballots.Ballot"],"VoteAccepted":["Model.Ballots.Ballot"],"Cancel":["Model.Nation.Citizen"],"VoteCancelled":["Model.Nation.Citizen"],"Close":[],"PollCLosed":[],"Start":[],"PollStarted":[],"CitizenLeft":["Model.Nation.Citizen"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Time.Posix":{"args":[],"tags":{"Posix":["Basics.Int"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Dict.NColor":{"args":[],"tags":{"Red":[],"Black":[]}}}}})}});}(this));

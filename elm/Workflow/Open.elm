@@ -14,6 +14,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, classList, id)
 import Model.Nation exposing (Citizen, Nation)
 import OtherHtml exposing (closeButton, enlistForm)
+import Tools
 
 
 -- ###################################################
@@ -25,10 +26,13 @@ update msg model =
     case model of
         Model.Open open ->
             case msg of
-                Leaving -> (model, Common.removeCitizen open.context.me)
+                Tick _ -> (model, Common.sendHeartbeat open.context.me)
                 CitizenLeft citizen ->
-                    ( Model.Open { open | context = Model.removeCitizen open.context citizen }
-                    , Cmd.none )
+                    if citizen == open.context.me then
+                        ( Guest "" "", Cmd.none )
+                    else
+                        ( Model.Open { open | context = Model.removeCitizen open.context citizen }
+                        , Cmd.none )
                 UpdateName _ ->
                     ( Debug.todo "Allow users to change their name"
                     , Cmd.none )
@@ -37,8 +41,8 @@ update msg model =
                     , Cmd.none )
                 NationUpdated nationResponse ->
                     case nationResponse of
-                        Err _ ->
-                            ( Debug.todo "Handle nation updated error cases"
+                        Err e ->
+                            ( Debug.log (Tools.httpErrorToString e) model
                             , Cmd.none )
                         Ok nation ->
                             ( Model.Open { open | context = Model.updateNation open.context nation }

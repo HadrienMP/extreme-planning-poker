@@ -19,10 +19,13 @@ update msg model =
     case model of
         Closed context ->
             case msg of
-                Leaving -> (model, Common.removeCitizen context.me)
+                Tick _ -> (model, Common.sendHeartbeat context.me)
                 CitizenLeft citizen ->
-                    ( Closed (Model.removeCitizen context citizen)
-                    , Cmd.none )
+                    if citizen == context.me then
+                        ( Guest "" "", Cmd.none )
+                    else
+                        ( Closed (Model.removeCitizen context citizen)
+                        , Cmd.none )
                 Start -> (model, start)
                 PollStarted ->
                     ( Open ( Model.OpenModel (Model.reset context) Nothing)

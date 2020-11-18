@@ -10,6 +10,7 @@ import Model.Nation as Nation exposing (Citizen)
 import OtherHtml exposing (enlistForm)
 import Random
 import Sse exposing (EventKind)
+import Time
 import Tools exposing (fold)
 import Workflow.Closed as Closed
 import Workflow.Guest as Guest
@@ -43,9 +44,12 @@ update msg model =
                 Closed _ -> Closed.update msg model
 
 subscriptions : Model -> Sub Msg
-subscriptions _ = messageReceiver
-    ( \event -> event |> Sse.through dispatch |> fold Error identity)
+subscriptions _ = Sub.batch
+    [ messageReceiver handleEvent, Time.every 1000 Tick ]
 
+handleEvent : (EventKind, Json.Decode.Value) -> Msg
+handleEvent event =
+    event |> Sse.through dispatch |> fold Error identity
 
 dispatch : Sse.Event -> Result String Msg
 dispatch event =
@@ -55,7 +59,6 @@ dispatch event =
         "voteCancelled" -> Sse.decodeData Nation.citizenDecoder event |> Result.map VoteCancelled
         "pollClosed" -> Ok PollCLosed
         "pollStarted" -> Ok PollStarted
-        "leaving" -> Ok Leaving
         "citizenLeft" -> Sse.decodeData Nation.citizenDecoder event |> Result.map CitizenLeft
         _ -> Err ("Unknown event type: " ++ event.kind)
 

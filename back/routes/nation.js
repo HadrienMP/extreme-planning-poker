@@ -23,6 +23,19 @@ router.post('/enlist', (req, res) => {
     }
 });
 
+router.post('/alive', (req, res) => {
+    let citizen = parseCitizen(req);
+    if (!nation.isCitizen(citizen.id)) {
+        res.status(400).json({
+            "status": 400,
+            "reason": "You are not an enlisted citizen"
+        }).end()
+    } else {
+        nation.alive(citizen);
+        res.sendStatus(200)
+    }
+});
+
 router.post('/leave', (req) => {
     let citizen = parseCitizen(req);
     nation.leave(citizen)
