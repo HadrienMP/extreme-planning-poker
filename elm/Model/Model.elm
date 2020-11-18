@@ -4,6 +4,8 @@ import Model.Ballots as Ballots exposing (Ballot, Ballots)
 import Model.Deck exposing (Deck)
 import Model.Decks as Decks
 import Model.Nation as Nation exposing (Citizen, CitizenId, Nation)
+import SHA1
+
 type alias Context =
     { deck: Deck
     , nation: Nation
@@ -21,6 +23,22 @@ type Model
     = Guest CitizenId String
     | Open OpenModel
     | Closed Context
+
+
+
+sync : (Nation, Ballots) -> Context -> Context
+sync (nation, ballots) context =
+    { context
+    | nation = nation
+    , ballots = ballots
+    }
+
+footprint : Context -> SHA1.Digest
+footprint context =
+    ((Nation.footprint context.nation), (Ballots.footprint context.ballots))
+    |> Tuple.mapBoth SHA1.toHex SHA1.toHex
+    |> (\t -> (Tuple.first t) ++ (Tuple.second t))
+    |> SHA1.fromString
 
 emptyOpen : Citizen -> Model
 emptyOpen citizen = Open (OpenModel (emptyContext citizen) Nothing)

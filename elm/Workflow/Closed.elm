@@ -19,7 +19,8 @@ update msg model =
     case model of
         Closed context ->
             case msg of
-                Tick _ -> (model, Common.sendHeartbeat context.me)
+                Tick _ -> (model, Common.sendHeartbeat context)
+                Sync sync -> (Closed (Model.sync sync context), Cmd.none)
                 CitizenLeft citizen ->
                     if citizen == context.me then
                         ( Guest "" "", Cmd.none )

@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class)
 import Json.Decode as D exposing (Decoder)
 import Json.Encode as Encode
+import SHA1
 
 type alias CitizenId = String
 type alias Citizen =
@@ -45,3 +46,9 @@ citizenDecoder = D.map2 Citizen (D.field "id" D.string) (D.field "name" D.string
 decoder : Decoder Nation
 decoder = D.dict citizenDecoder
 
+footprint : Nation -> SHA1.Digest
+footprint nation =
+    Dict.values nation
+    |> List.map (\citizen -> citizen.id ++ citizen.name)
+    |> List.foldl (++) ""
+    |> SHA1.fromString

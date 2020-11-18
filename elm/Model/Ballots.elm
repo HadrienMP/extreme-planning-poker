@@ -7,6 +7,7 @@ import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Model.Nation exposing (Citizen, CitizenId)
+import SHA1
 
 type alias Ballot =
     { citizen : CitizenId
@@ -44,5 +45,18 @@ encode ballot =
         , ("cardCode", Encode.string ballot.cardCode)
         ]
 
+decoder : Decode.Decoder Ballots
+decoder = Decode.dict cardCodeDecoder
+
 ballotDecoder : Decode.Decoder Ballot
-ballotDecoder = Decode.map2 Ballot (Decode.field "citizen" Decode.string) (Decode.field "cardCode" Decode.string)
+ballotDecoder = Decode.map2 Ballot (Decode.field "citizen" Decode.string) cardCodeDecoder
+
+cardCodeDecoder : Decode.Decoder CardCode
+cardCodeDecoder = (Decode.field "cardCode" Decode.string)
+
+footprint : Ballots -> SHA1.Digest
+footprint ballots =
+    Dict.toList ballots
+    |> List.map (\ballot -> (Tuple.first ballot) ++ (Tuple.second ballot))
+    |> List.foldl (++) ""
+    |> SHA1.fromString

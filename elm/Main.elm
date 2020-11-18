@@ -4,9 +4,9 @@ import Browser
 import Html exposing (..)
 import Json.Decode
 import Messages exposing (Msg(..))
-import Model.Ballots as Ballots
+import Model.Ballots as Ballots exposing (Ballots)
 import Model.Model as Model exposing (Context, Model(..))
-import Model.Nation as Nation exposing (Citizen)
+import Model.Nation as Nation exposing (Citizen, Nation)
 import OtherHtml exposing (enlistForm)
 import Random
 import Sse exposing (EventKind)
@@ -40,9 +40,10 @@ update msg model =
         _ ->
             case model of
                 Guest _ _  -> Guest.update msg model
-                Model.Open _ -> Open.update msg model
+                Model.Open open -> Open.update msg open
                 Closed _ -> Closed.update msg model
 
+-- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.batch
     [ messageReceiver handleEvent, Time.every 1000 Tick ]
@@ -60,8 +61,15 @@ dispatch event =
         "pollClosed" -> Ok PollCLosed
         "pollStarted" -> Ok PollStarted
         "citizenLeft" -> Sse.decodeData Nation.citizenDecoder event |> Result.map CitizenLeft
+        "sync" -> Sse.decodeData syncDecoder event |> Result.map Sync
         _ -> Err ("Unknown event type: " ++ event.kind)
 
+syncDecoder : Json.Decode.Decoder (Nation, Ballots)
+syncDecoder =
+    Json.Decode.map2
+        (\a b -> (a, b))
+        (Json.Decode.field "nation" Nation.decoder)
+        (Json.Decode.field "ballots" Ballots.decoder)
 
 -- VIEW
 view : Model -> Html Msg

@@ -1,4 +1,5 @@
 const bus = require("./eventBus")
+const hash = require("sha1")
 
 let nation = {};
 
@@ -37,3 +38,10 @@ module.exports.all = _ => {
     }
     return result;
 }
+module.exports.footprint = () => {
+    let flat = ""
+    for (let id in nation) {
+        flat += id + nation[id].citizen.name;
+    }
+    return hash(flat);
+};

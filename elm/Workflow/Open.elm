@@ -21,48 +21,48 @@ import Tools
 -- UPDATE
 -- ###################################################
 
-update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
-    case model of
-        Model.Open open ->
-            case msg of
-                Tick _ -> (model, Common.sendHeartbeat open.context.me)
-                CitizenLeft citizen ->
-                    if citizen == open.context.me then
-                        ( Guest "" "", Cmd.none )
-                    else
-                        ( Model.Open { open | context = Model.removeCitizen open.context citizen }
-                        , Cmd.none )
-                UpdateName _ ->
-                    ( Debug.todo "Allow users to change their name"
+update : Msg -> Model.OpenModel -> (Model, Cmd Msg)
+update msg open =
+    case msg of
+        Tick _ -> (Model.Open open, Common.sendHeartbeat open.context)
+        Sync sync ->
+            ( Model.Open { open | context = Model.sync sync open.context }
+            , Cmd.none )
+        CitizenLeft citizen ->
+            if citizen == open.context.me then
+                ( Guest "" "", Cmd.none )
+            else
+                ( Model.Open { open | context = Model.removeCitizen open.context citizen }
+                , Cmd.none )
+        UpdateName _ ->
+            ( Debug.todo "Allow users to change their name"
+            , Cmd.none )
+        Enlisted citizen ->
+            ( Model.Open { open | context = Model.enlist open.context citizen }
+            , Cmd.none )
+        NationUpdated nationResponse ->
+            case nationResponse of
+                Err e ->
+                    ( Debug.log (Tools.httpErrorToString e) (Model.Open open)
                     , Cmd.none )
-                Enlisted citizen ->
-                    ( Model.Open { open | context = Model.enlist open.context citizen }
+                Ok nation ->
+                    ( Model.Open { open | context = Model.updateNation open.context nation }
                     , Cmd.none )
-                NationUpdated nationResponse ->
-                    case nationResponse of
-                        Err e ->
-                            ( Debug.log (Tools.httpErrorToString e) model
-                            , Cmd.none )
-                        Ok nation ->
-                            ( Model.Open { open | context = Model.updateNation open.context nation }
-                            , Cmd.none )
-                Vote newBallot ->
-                    ( Model.Open { open | ballot = Just newBallot }
-                    , vote newBallot)
-                VoteAccepted newBallot ->
-                    ( Model.Open { open | context =  Model.vote open.context newBallot }
-                    , Cmd.none)
-                Cancel citizen ->
-                    ( Model.Open { open | ballot = Nothing }
-                    , cancelVote citizen)
-                VoteCancelled citizen ->
-                    ( Model.Open { open | context =  Model.cancelVote open.context citizen, ballot = Nothing }
-                    , Cmd.none)
-                Close -> (model, close)
-                PollCLosed -> ( Model.Closed open.context, Cmd.none)
-                _ -> (model, Cmd.none)
-        _ -> (model, Cmd.none)
+        Vote newBallot ->
+            ( Model.Open { open | ballot = Just newBallot }
+            , vote newBallot)
+        VoteAccepted newBallot ->
+            ( Model.Open { open | context =  Model.vote open.context newBallot }
+            , Cmd.none)
+        Cancel citizen ->
+            ( Model.Open { open | ballot = Nothing }
+            , cancelVote citizen)
+        VoteCancelled citizen ->
+            ( Model.Open { open | context =  Model.cancelVote open.context citizen, ballot = Nothing }
+            , Cmd.none)
+        Close -> (Model.Open open, close)
+        PollCLosed -> ( Model.Closed open.context, Cmd.none)
+        _ -> (Model.Open open, Cmd.none)
 
 
 vote : Ballots.Ballot -> Cmd Msg
