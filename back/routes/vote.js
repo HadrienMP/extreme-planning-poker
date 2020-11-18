@@ -8,7 +8,7 @@ router.post('/', (req, res) => {
     let ballot = parseBallot(req);
     if (nation.isCitizen(ballot.citizen)) {
         ballots.add(ballot);
-        bus.publish("voteAccepted", ballot)
+        bus.publishFront("voteAccepted", ballot)
         res.sendStatus(200)
     } else {
         res.json({
@@ -22,7 +22,7 @@ router.post('/', (req, res) => {
 router.post('/cancel', (req, res) => {
     let citizen = parseCitizen(req)
     delete ballots.cancel(citizen.id)
-    bus.publish("voteCancelled", citizen)
+    bus.publishFront("voteCancelled", citizen)
     res.sendStatus(200)
 });
 

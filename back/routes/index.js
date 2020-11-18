@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const sse = require('../sse');
-require("../eventBus").init()
+let bus = require("../eventBus");
+const nation = require("../nation");
+const ballots = require("../ballots");
+bus.init()
 
 
 router.get('/', (req, res) => {
@@ -9,5 +12,11 @@ router.get('/', (req, res) => {
 });
 
 router.get('/sse', sse.init);
+
+bus.on("citizenLeft", citizen => {
+    nation.leave(citizen)
+    ballots.cancel(citizen)
+    bus.publishFront("citizenLeft", citizen)
+});
 
 module.exports = router;

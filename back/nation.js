@@ -8,7 +8,6 @@ setInterval(() => {
         let lastDiff = Date.now() - nation[id].lastSeen
         if (lastDiff > 2000) {
             bus.publish("citizenLeft", nation[id].citizen)
-            delete nation[id]
         }
     }
 }, 1000)

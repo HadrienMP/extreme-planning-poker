@@ -4,13 +4,13 @@ const router = express.Router();
 const bus = require('../eventBus');
 
 router.post('/close', (req, res) => {
-    bus.publish("pollClosed", {})
+    bus.publishFront("pollClosed", {})
     res.sendStatus(200)
 });
 
 router.post('/start', (req, res) => {
     ballots.reset()
-    bus.publish("pollStarted", {})
+    bus.publishFront("pollStarted", {})
     res.sendStatus(200)
 });
 

@@ -15,7 +15,7 @@ router.post('/enlist', (req, res) => {
         }).end()
     } else {
         nation.enlist(citizen);
-        bus.publish("enlisted", citizen)
+        bus.publishFront("enlisted", citizen)
         res.json(state());
     }
 });
@@ -29,7 +29,7 @@ router.post('/alive', (req, res) => {
         }).end()
     } else {
         if (req.body.footprint !== footprint()) {
-            bus.publish("sync", state());
+            bus.publishFront("sync", state());
         }
         nation.alive(citizen);
         res.sendStatus(200)
@@ -40,7 +40,7 @@ router.post('/leave', (req) => {
     let citizen = parseCitizen(req.body);
     nation.leave(citizen)
     ballots.cancel(citizen)
-    bus.publish("citizenLeft", citizen)
+    bus.publishFront("citizenLeft", citizen)
 });
 
 const state = () => ({
