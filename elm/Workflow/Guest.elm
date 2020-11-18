@@ -18,7 +18,11 @@ update msg model =
             case msg of
                 Enlist -> (model, serverEnlist (Citizen id guest))
                 GeneratedId generated -> (Guest generated guest, Cmd.none)
-                Enlisted citizen -> (Model.emptyOpen citizen, loadNation)
+                Enlisted citizen ->
+                    if (citizen.id == id) then
+                        (Model.emptyOpen citizen, loadNation)
+                    else
+                        (model, Cmd.none)
                 UpdateName newName  -> (Guest id newName, Cmd.none)
                 _ -> (model, Cmd.none)
         _ -> (model, Cmd.none)
