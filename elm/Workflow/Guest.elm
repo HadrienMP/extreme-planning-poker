@@ -6,6 +6,7 @@ import Model.Decks as Decks
 import Model.Model as Model exposing (Context, Model(..))
 import Http
 import Model.Nation as Nation exposing (Citizen)
+import Tools
 
 
 -- ###################################################
@@ -19,11 +20,14 @@ update msg model =
             case msg of
                 Enlist -> (model, serverEnlist (Citizen id guest))
                 GeneratedId generated -> (Guest generated guest, Cmd.none)
-                Enlisted citizen ->
-                    if (citizen.id == id) then
-                        (Model.emptyOpen citizen, loadNation)
-                    else
-                        (model, Cmd.none)
+                Enlisted response ->
+                    case response of
+                        Err e ->
+                            ( Debug.log (Tools.httpErrorToString e) model
+                            , Cmd.none )
+                        Ok state ->
+                            ( Model.openFrom (Citizen id guest) state
+                            , Cmd.none )
                 UpdateName newName  -> (Guest id newName, Cmd.none)
                 _ -> (model, Cmd.none)
         _ -> (model, Cmd.none)
@@ -32,11 +36,5 @@ serverEnlist : Citizen -> Cmd Msg
 serverEnlist citizen = Http.post
     { url = "/nation/enlist"
     , body = Http.jsonBody (Nation.encodeCitizen citizen)
-    , expect = Http.expectWhatever CmdResp
-    }
-
-loadNation : Cmd Msg
-loadNation = Http.get
-    { url = "/nation"
-    , expect = Http.expectJson StateResponse Common.stateDecoder
+    , expect = Http.expectJson Enlisted Common.stateDecoder
     }

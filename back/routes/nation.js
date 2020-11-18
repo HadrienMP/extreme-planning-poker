@@ -6,10 +6,6 @@ const ballots = require('../ballots');
 const bus = require('../eventBus');
 const hash = require("sha1")
 
-router.get('/', (req, res) => {
-    res.json(state());
-});
-
 router.post('/enlist', (req, res) => {
     let citizen = parseCitizen(req.body);
     if (nation.isCitizen(citizen.id) || nation.isNameTaken(citizen)) {
@@ -20,13 +16,8 @@ router.post('/enlist', (req, res) => {
     } else {
         nation.enlist(citizen);
         bus.publish("enlisted", citizen)
-        res.sendStatus(200)
+        res.json(state());
     }
-});
-
-const state = () => ({
-    nation: nation.all(),
-    ballots: ballots.all()
 });
 
 router.post('/alive', (req, res) => {
@@ -45,14 +36,19 @@ router.post('/alive', (req, res) => {
     }
 });
 
-const footprint = () => hash(nation.footprint() + ballots.footprint());
-
 router.post('/leave', (req) => {
     let citizen = parseCitizen(req.body);
     nation.leave(citizen)
     ballots.cancel(citizen)
     bus.publish("citizenLeft", citizen)
 });
+
+const state = () => ({
+    nation: nation.all(),
+    ballots: ballots.all()
+});
+
+const footprint = () => hash(nation.footprint() + ballots.footprint());
 
 const parseCitizen = probablyCitizen => ({id: probablyCitizen.id, name: probablyCitizen.name});
 

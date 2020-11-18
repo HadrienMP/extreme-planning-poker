@@ -20,9 +20,9 @@ type Msg
     | GeneratedId String
 
     | Enlist
-    | Enlisted Citizen
+    | Enlisted (Result Http.Error State)
+    | NewCitizen Citizen
 
-    | StateResponse (Result Http.Error State)
     | Vote Ballot
     | VoteAccepted Ballot
     | Cancel Citizen

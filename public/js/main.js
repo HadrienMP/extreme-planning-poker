@@ -11530,8 +11530,8 @@ var $author$project$Messages$Error = function (a) {
 var $author$project$Messages$CitizenLeft = function (a) {
 	return {$: 'CitizenLeft', a: a};
 };
-var $author$project$Messages$Enlisted = function (a) {
-	return {$: 'Enlisted', a: a};
+var $author$project$Messages$NewCitizen = function (a) {
+	return {$: 'NewCitizen', a: a};
 };
 var $author$project$Messages$PollCLosed = {$: 'PollCLosed'};
 var $author$project$Messages$PollStarted = {$: 'PollStarted'};
@@ -11608,7 +11608,7 @@ var $author$project$Main$dispatch = function (event) {
 		case 'enlisted':
 			return A2(
 				$elm$core$Result$map,
-				$author$project$Messages$Enlisted,
+				$author$project$Messages$NewCitizen,
 				A2($author$project$Sse$decodeData, $author$project$Model$Nation$citizenDecoder, event));
 		case 'voteAccepted':
 			return A2(
@@ -13030,7 +13030,22 @@ var $author$project$Workflow$Closed$update = F2(
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$Model$Nation$empty = $elm$core$Dict$fromList(_List_Nil);
+var $author$project$Tools$httpErrorToString = function (error) {
+	switch (error.$) {
+		case 'BadUrl':
+			var msg = error.a;
+			return msg;
+		case 'Timeout':
+			return 'timeout';
+		case 'NetworkError':
+			return 'network error';
+		case 'BadStatus':
+			return 'Bad status';
+		default:
+			var msg = error.a;
+			return msg;
+	}
+};
 var $author$project$Model$Deck$Card = F3(
 	function (value, iconClass, code) {
 		return {code: code, iconClass: iconClass, value: value};
@@ -13044,18 +13059,20 @@ var $author$project$Model$Decks$fwg = _List_fromArray(
 		A3($author$project$Model$Deck$Card, '2 Big', 'fas fa-dragon', 'too-big'),
 		A3($author$project$Model$Deck$Card, '?', 'fas fa-question', 'no-idea')
 	]);
-var $author$project$Model$Model$emptyContext = function (citizen) {
-	return {ballots: $author$project$Model$Ballots$empty, deck: $author$project$Model$Decks$fwg, me: citizen, nation: $author$project$Model$Nation$empty, updatedName: citizen.name};
-};
-var $author$project$Model$Model$emptyOpen = function (citizen) {
-	return $author$project$Model$Model$Open(
-		A2(
-			$author$project$Model$Model$OpenModel,
-			$author$project$Model$Model$emptyContext(citizen),
-			$elm$core$Maybe$Nothing));
-};
-var $author$project$Messages$StateResponse = function (a) {
-	return {$: 'StateResponse', a: a};
+var $author$project$Model$Model$contextFrom = F2(
+	function (citizen, state) {
+		return {ballots: state.ballots, deck: $author$project$Model$Decks$fwg, me: citizen, nation: state.nation, updatedName: citizen.name};
+	});
+var $author$project$Model$Model$openFrom = F2(
+	function (citizen, state) {
+		return $author$project$Model$Model$Open(
+			A2(
+				$author$project$Model$Model$OpenModel,
+				A2($author$project$Model$Model$contextFrom, citizen, state),
+				$elm$core$Maybe$Nothing));
+	});
+var $author$project$Messages$Enlisted = function (a) {
+	return {$: 'Enlisted', a: a};
 };
 var $elm$http$Http$expectStringResponse = F2(
 	function (toMsg, toResult) {
@@ -13078,21 +13095,12 @@ var $elm$http$Http$expectJson = F2(
 						A2($elm$json$Json$Decode$decodeString, decoder, string));
 				}));
 	});
-var $elm$http$Http$get = function (r) {
-	return $elm$http$Http$request(
-		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
-};
-var $author$project$Workflow$Guest$loadNation = $elm$http$Http$get(
-	{
-		expect: A2($elm$http$Http$expectJson, $author$project$Messages$StateResponse, $author$project$Common$stateDecoder),
-		url: '/nation'
-	});
 var $author$project$Workflow$Guest$serverEnlist = function (citizen) {
 	return $elm$http$Http$post(
 		{
 			body: $elm$http$Http$jsonBody(
 				$author$project$Model$Nation$encodeCitizen(citizen)),
-			expect: $elm$http$Http$expectWhatever($author$project$Messages$CmdResp),
+			expect: A2($elm$http$Http$expectJson, $author$project$Messages$Enlisted, $author$project$Common$stateDecoder),
 			url: '/nation/enlist'
 		});
 };
@@ -13113,10 +13121,24 @@ var $author$project$Workflow$Guest$update = F2(
 						A2($author$project$Model$Model$Guest, generated, guest),
 						$elm$core$Platform$Cmd$none);
 				case 'Enlisted':
-					var citizen = msg.a;
-					return _Utils_eq(citizen.id, id) ? _Utils_Tuple2(
-						$author$project$Model$Model$emptyOpen(citizen),
-						$author$project$Workflow$Guest$loadNation) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					var response = msg.a;
+					if (response.$ === 'Err') {
+						var e = response.a;
+						return _Utils_Tuple2(
+							A2(
+								$elm$core$Debug$log,
+								$author$project$Tools$httpErrorToString(e),
+								model),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						var state = response.a;
+						return _Utils_Tuple2(
+							A2(
+								$author$project$Model$Model$openFrom,
+								A2($author$project$Model$Nation$Citizen, id, guest),
+								state),
+							$elm$core$Platform$Cmd$none);
+					}
 				case 'UpdateName':
 					var newName = msg.a;
 					return _Utils_Tuple2(
@@ -13168,22 +13190,6 @@ var $author$project$Model$Model$enlist = F2(
 				nation: A2($author$project$Model$Nation$enlist, citizen, context.nation)
 			});
 	});
-var $author$project$Tools$httpErrorToString = function (error) {
-	switch (error.$) {
-		case 'BadUrl':
-			var msg = error.a;
-			return msg;
-		case 'Timeout':
-			return 'timeout';
-		case 'NetworkError':
-			return 'network error';
-		case 'BadStatus':
-			return 'Bad status';
-		default:
-			var msg = error.a;
-			return msg;
-	}
-};
 var $elm$core$Debug$todo = _Debug_todo;
 var $author$project$Model$Ballots$add = F2(
 	function (ballot, ballots) {
@@ -13252,11 +13258,11 @@ var $author$project$Workflow$Open$update = F2(
 					_Debug_todo(
 						'Workflow.Open',
 						{
-							start: {line: 38, column: 15},
-							end: {line: 38, column: 25}
+							start: {line: 37, column: 15},
+							end: {line: 37, column: 25}
 						})('Allow users to change their name'),
 					$elm$core$Platform$Cmd$none);
-			case 'Enlisted':
+			case 'NewCitizen':
 				var citizen = msg.a;
 				return _Utils_Tuple2(
 					$author$project$Model$Model$Open(
@@ -13266,27 +13272,6 @@ var $author$project$Workflow$Open$update = F2(
 								context: A2($author$project$Model$Model$enlist, open.context, citizen)
 							})),
 					$elm$core$Platform$Cmd$none);
-			case 'StateResponse':
-				var stateResponse = msg.a;
-				if (stateResponse.$ === 'Err') {
-					var e = stateResponse.a;
-					return _Utils_Tuple2(
-						A2(
-							$elm$core$Debug$log,
-							$author$project$Tools$httpErrorToString(e),
-							$author$project$Model$Model$Open(open)),
-						$elm$core$Platform$Cmd$none);
-				} else {
-					var state = stateResponse.a;
-					return _Utils_Tuple2(
-						$author$project$Model$Model$Open(
-							_Utils_update(
-								open,
-								{
-									context: A2($author$project$Model$Model$sync, state, open.context)
-								})),
-						$elm$core$Platform$Cmd$none);
-				}
 			case 'Vote':
 				var newBallot = msg.a;
 				return _Utils_Tuple2(
@@ -13777,4 +13762,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Messages.Msg","aliases":{"Model.Ballots.Ballot":{"args":[],"type":"{ citizen : Model.Nation.CitizenId, cardCode : Model.Deck.CardCode }"},"Model.Ballots.Ballots":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Deck.CardCode"},"Model.Deck.CardCode":{"args":[],"type":"String.String"},"Model.Nation.Citizen":{"args":[],"type":"{ id : Model.Nation.CitizenId, name : String.String }"},"Model.Nation.CitizenId":{"args":[],"type":"String.String"},"Model.Nation.Nation":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Nation.Citizen"},"Messages.State":{"args":[],"type":"{ nation : Model.Nation.Nation, ballots : Model.Ballots.Ballots }"}},"unions":{"Messages.Msg":{"args":[],"tags":{"Error":["String.String"],"CmdResp":["Result.Result Http.Error ()"],"Tick":["Time.Posix"],"Sync":["Messages.State"],"UpdateName":["String.String"],"GeneratedId":["String.String"],"Enlist":[],"Enlisted":["Model.Nation.Citizen"],"StateResponse":["Result.Result Http.Error Messages.State"],"Vote":["Model.Ballots.Ballot"],"VoteAccepted":["Model.Ballots.Ballot"],"Cancel":["Model.Nation.Citizen"],"VoteCancelled":["Model.Nation.Citizen"],"Close":[],"PollCLosed":[],"Start":[],"PollStarted":[],"CitizenLeft":["Model.Nation.Citizen"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Time.Posix":{"args":[],"tags":{"Posix":["Basics.Int"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Dict.NColor":{"args":[],"tags":{"Red":[],"Black":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Messages.Msg","aliases":{"Model.Ballots.Ballot":{"args":[],"type":"{ citizen : Model.Nation.CitizenId, cardCode : Model.Deck.CardCode }"},"Model.Ballots.Ballots":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Deck.CardCode"},"Model.Deck.CardCode":{"args":[],"type":"String.String"},"Model.Nation.Citizen":{"args":[],"type":"{ id : Model.Nation.CitizenId, name : String.String }"},"Model.Nation.CitizenId":{"args":[],"type":"String.String"},"Model.Nation.Nation":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Nation.Citizen"},"Messages.State":{"args":[],"type":"{ nation : Model.Nation.Nation, ballots : Model.Ballots.Ballots }"}},"unions":{"Messages.Msg":{"args":[],"tags":{"Error":["String.String"],"CmdResp":["Result.Result Http.Error ()"],"Tick":["Time.Posix"],"Sync":["Messages.State"],"UpdateName":["String.String"],"GeneratedId":["String.String"],"Enlist":[],"Enlisted":["Result.Result Http.Error Messages.State"],"NewCitizen":["Model.Nation.Citizen"],"Vote":["Model.Ballots.Ballot"],"VoteAccepted":["Model.Ballots.Ballot"],"Cancel":["Model.Nation.Citizen"],"VoteCancelled":["Model.Nation.Citizen"],"Close":[],"PollCLosed":[],"Start":[],"PollStarted":[],"CitizenLeft":["Model.Nation.Citizen"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Time.Posix":{"args":[],"tags":{"Posix":["Basics.Int"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Dict.NColor":{"args":[],"tags":{"Red":[],"Black":[]}}}}})}});}(this));

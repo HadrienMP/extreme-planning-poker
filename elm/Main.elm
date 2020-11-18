@@ -56,7 +56,7 @@ handleEvent event =
 dispatch : Sse.Event -> Result String Msg
 dispatch event =
     case event.kind of
-        "enlisted" -> Sse.decodeData Nation.citizenDecoder event |> Result.map Enlisted
+        "enlisted" -> Sse.decodeData Nation.citizenDecoder event |> Result.map NewCitizen
         "voteAccepted" -> Sse.decodeData Ballots.ballotDecoder event |> Result.map VoteAccepted
         "voteCancelled" -> Sse.decodeData Nation.citizenDecoder event |> Result.map VoteCancelled
         "pollClosed" -> Ok PollCLosed

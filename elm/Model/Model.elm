@@ -41,14 +41,14 @@ footprint context =
     |> (\t -> (Tuple.first t) ++ (Tuple.second t))
     |> SHA1.fromString
 
-emptyOpen : Citizen -> Model
-emptyOpen citizen = Open (OpenModel (emptyContext citizen) Nothing)
+openFrom : Citizen -> State -> Model
+openFrom citizen state = Open (OpenModel (contextFrom citizen state) Nothing)
 
-emptyContext : Citizen -> Context
-emptyContext citizen =
+contextFrom : Citizen -> State -> Context
+contextFrom citizen state =
     { deck= Decks.fwg
-    , nation= Nation.empty
-    , ballots= Ballots.empty
+    , nation= state.nation
+    , ballots= state.ballots
     , me = citizen
     , updatedName = citizen.name
     }

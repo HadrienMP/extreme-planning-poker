@@ -14,7 +14,6 @@ import Html exposing (..)
 import Html.Attributes exposing (class, classList, id)
 import Model.Nation exposing (Citizen, Nation)
 import OtherHtml exposing (closeButton, enlistForm)
-import Tools
 
 
 -- ###################################################
@@ -37,17 +36,9 @@ update msg open =
         UpdateName _ ->
             ( Debug.todo "Allow users to change their name"
             , Cmd.none )
-        Enlisted citizen ->
+        NewCitizen citizen ->
             ( Model.Open { open | context = Model.enlist open.context citizen }
             , Cmd.none )
-        StateResponse stateResponse ->
-            case stateResponse of
-                Err e ->
-                    ( Debug.log (Tools.httpErrorToString e) (Model.Open open)
-                    , Cmd.none )
-                Ok state ->
-                    ( Model.Open { open | context = Model.sync state open.context }
-                    , Cmd.none )
         Vote newBallot ->
             ( Model.Open { open | ballot = Just newBallot }
             , vote newBallot)
