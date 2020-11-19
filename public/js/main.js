@@ -11546,7 +11546,7 @@ var $author$project$Messages$CitizenLeft = function (a) {
 var $author$project$Messages$NewCitizen = function (a) {
 	return {$: 'NewCitizen', a: a};
 };
-var $author$project$Messages$PollCLosed = {$: 'PollCLosed'};
+var $author$project$Messages$PollClosed = {$: 'PollClosed'};
 var $author$project$Messages$PollStarted = {$: 'PollStarted'};
 var $author$project$Messages$Sync = function (a) {
 	return {$: 'Sync', a: a};
@@ -11634,7 +11634,7 @@ var $author$project$Main$dispatch = function (event) {
 				$author$project$Messages$VoteCancelled,
 				A2($author$project$Sse$decodeData, $author$project$Model$Nation$citizenDecoder, event));
 		case 'pollClosed':
-			return $elm$core$Result$Ok($author$project$Messages$PollCLosed);
+			return $elm$core$Result$Ok($author$project$Messages$PollClosed);
 		case 'pollStarted':
 			return $elm$core$Result$Ok($author$project$Messages$PollStarted);
 		case 'citizenLeft':
@@ -13497,7 +13497,7 @@ var $author$project$Workflow$Open$update = F2(
 					return _Utils_Tuple2(
 						$author$project$Model$Model$Open(open),
 						$author$project$Workflow$Open$close);
-				case 'PollCLosed':
+				case 'PollClosed':
 					return _Utils_Tuple2(
 						$author$project$Model$Model$Closed(open.context),
 						$elm$core$Platform$Cmd$none);
@@ -13572,7 +13572,8 @@ var $author$project$OtherHtml$enlistForm = function (citizen) {
 		$elm$html$Html$form,
 		_List_fromArray(
 			[
-				$elm$html$Html$Events$onSubmit($author$project$Messages$Enlist)
+				$elm$html$Html$Events$onSubmit($author$project$Messages$Enlist),
+				$elm$html$Html$Attributes$id('enlist-form')
 			]),
 		_List_fromArray(
 			[
@@ -13988,4 +13989,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Messages.Msg","aliases":{"Model.Ballots.Ballot":{"args":[],"type":"{ citizen : Model.Nation.CitizenId, cardCode : Model.Deck.CardCode }"},"Model.Ballots.Ballots":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Deck.CardCode"},"Model.Deck.CardCode":{"args":[],"type":"String.String"},"Model.Nation.Citizen":{"args":[],"type":"{ id : Model.Nation.CitizenId, name : String.String }"},"Model.Nation.CitizenId":{"args":[],"type":"String.String"},"Model.Nation.Nation":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Nation.Citizen"},"Messages.State":{"args":[],"type":"{ nation : Model.Nation.Nation, ballots : Model.Ballots.Ballots }"},"Model.Error.Error":{"args":[],"type":"{ content : String.String, time : Time.Posix }"}},"unions":{"Messages.Msg":{"args":[],"tags":{"CmdResp":["Result.Result Http.Error ()"],"SendHeartbeat":["Time.Posix"],"HeartbeatResp":["Result.Result Http.Error ()"],"Sync":["Messages.State"],"ErrorMsg":["Model.Error.Msg"],"UpdateName":["String.String"],"GeneratedId":["String.String"],"Enlist":[],"Enlisted":["Result.Result Http.Error Messages.State"],"NewCitizen":["Model.Nation.Citizen"],"Vote":["Model.Ballots.Ballot"],"VoteAccepted":["Model.Ballots.Ballot"],"Cancel":["Model.Nation.Citizen"],"VoteCancelled":["Model.Nation.Citizen"],"Close":[],"PollCLosed":[],"Start":[],"PollStarted":[],"CitizenLeft":["Model.Nation.Citizen"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Model.Error.Msg":{"args":[],"tags":{"Add":["String.String"],"Timed":["Model.Error.Error"],"Delete":["Model.Error.Error"],"Clean":["Time.Posix"]}},"Time.Posix":{"args":[],"tags":{"Posix":["Basics.Int"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Dict.NColor":{"args":[],"tags":{"Red":[],"Black":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Messages.Msg","aliases":{"Model.Ballots.Ballot":{"args":[],"type":"{ citizen : Model.Nation.CitizenId, cardCode : Model.Deck.CardCode }"},"Model.Ballots.Ballots":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Deck.CardCode"},"Model.Deck.CardCode":{"args":[],"type":"String.String"},"Model.Nation.Citizen":{"args":[],"type":"{ id : Model.Nation.CitizenId, name : String.String }"},"Model.Nation.CitizenId":{"args":[],"type":"String.String"},"Model.Nation.Nation":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Nation.Citizen"},"Messages.State":{"args":[],"type":"{ nation : Model.Nation.Nation, ballots : Model.Ballots.Ballots }"},"Model.Error.Error":{"args":[],"type":"{ content : String.String, time : Time.Posix }"}},"unions":{"Messages.Msg":{"args":[],"tags":{"CmdResp":["Result.Result Http.Error ()"],"SendHeartbeat":["Time.Posix"],"HeartbeatResp":["Result.Result Http.Error ()"],"Sync":["Messages.State"],"ErrorMsg":["Model.Error.Msg"],"UpdateName":["String.String"],"GeneratedId":["String.String"],"Enlist":[],"Enlisted":["Result.Result Http.Error Messages.State"],"NewCitizen":["Model.Nation.Citizen"],"Vote":["Model.Ballots.Ballot"],"VoteAccepted":["Model.Ballots.Ballot"],"Cancel":["Model.Nation.Citizen"],"VoteCancelled":["Model.Nation.Citizen"],"Close":[],"PollClosed":[],"Start":[],"PollStarted":[],"CitizenLeft":["Model.Nation.Citizen"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Model.Error.Msg":{"args":[],"tags":{"Add":["String.String"],"Timed":["Model.Error.Error"],"Delete":["Model.Error.Error"],"Clean":["Time.Posix"]}},"Time.Posix":{"args":[],"tags":{"Posix":["Basics.Int"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Dict.NColor":{"args":[],"tags":{"Red":[],"Black":[]}}}}})}});}(this));

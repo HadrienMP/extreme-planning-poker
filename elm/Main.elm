@@ -69,7 +69,7 @@ dispatch event =
         "enlisted" -> Sse.decodeData Nation.citizenDecoder event |> Result.map NewCitizen
         "voteAccepted" -> Sse.decodeData Ballots.ballotDecoder event |> Result.map VoteAccepted
         "voteCancelled" -> Sse.decodeData Nation.citizenDecoder event |> Result.map VoteCancelled
-        "pollClosed" -> Ok PollCLosed
+        "pollClosed" -> Ok PollClosed
         "pollStarted" -> Ok PollStarted
         "citizenLeft" -> Sse.decodeData Nation.citizenDecoder event |> Result.map CitizenLeft
         "sync" -> Sse.decodeData Common.stateDecoder event |> Result.map Sync

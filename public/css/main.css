@@ -147,6 +147,7 @@ p {
   padding: 10px 40px 10px 10px;
   position: relative;
   opacity: .7;
+  transition: top 1s;
 }
 
 #errors li:hover {
@@ -172,4 +173,12 @@ p {
 
 #errors li:first-child {
   margin-top: 0;
+}
+
+#enlist-form input {
+  border-radius: 5px 0 0 5px;
+}
+
+#enlist-form button {
+  border-radius: 0 5px 5px 0;
 }

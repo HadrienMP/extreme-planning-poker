@@ -32,7 +32,7 @@ type Msg
     | VoteCancelled Citizen
 
     | Close
-    | PollCLosed
+    | PollClosed
     | Start
     | PollStarted
 

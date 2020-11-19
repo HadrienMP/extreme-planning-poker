@@ -79,7 +79,7 @@ update msg open =
         Close ->
             ( Model.Open open
             , close)
-        PollCLosed ->
+        PollClosed ->
             ( Model.Closed open.context
             , Cmd.none)
         _ ->
