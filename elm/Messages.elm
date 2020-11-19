@@ -13,9 +13,9 @@ type alias State =
 
 type Msg
     = CmdResp (Result Http.Error ())
-    | Tick Time.Posix
-    | Sync State
+    | SendHeartbeat Time.Posix
     | HeartbeatResp (Result Http.Error ())
+    | Sync State
 
     | ErrorMsg Error.Msg
 

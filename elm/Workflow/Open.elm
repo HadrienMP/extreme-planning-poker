@@ -21,25 +21,23 @@ import Tools
 -- UPDATE
 -- ###################################################
 
-update : Msg -> Errors -> Model.OpenModel -> (Model, Cmd Msg)
-update msg errors open =
+update : Msg -> Model.OpenModel -> (Model.Workflow, Cmd Msg)
+update msg open =
     case msg of
-        Tick _ ->
-            ( Model.Open open |> Model errors
-            , Common.sendHeartbeat open.context )
+        SendHeartbeat _ ->
+            ( Model.Open open, Common.sendHeartbeat open.context )
 
         HeartbeatResp (Err e) ->
             case e of
                 Http.BadStatus _ ->
                     ( open.context.me
                         |> (\citizen -> Model.Guest citizen.id citizen.name)
-                        |> Model errors
                     , "You were kicked out by the server (probably a restart)"
                         |> Error.addError
                         |> Cmd.map ErrorMsg
                     )
                 _ ->
-                    ( Model.Open open |> Model errors
+                    ( Model.Open open
                     , Tools.httpErrorToString e
                         |> Error.addError
                         |> Cmd.map ErrorMsg
@@ -48,51 +46,44 @@ update msg errors open =
         Sync state ->
             ( { open | context = Model.sync state open.context }
                 |> Model.Open
-                |> Model errors
             , Cmd.none )
 
         CitizenLeft citizen ->
             if citizen == open.context.me then
-                ( Model.Guest "" "" |> Model errors
+                ( Model.Guest "" ""
                 , Cmd.none )
             else
                 ( { open | context = Model.removeCitizen open.context citizen }
                     |> Model.Open
-                    |> Model errors
                 , Cmd.none )
         NewCitizen citizen ->
             ( { open | context = Model.enlist open.context citizen }
                 |> Model.Open
-                |> Model errors
             , Cmd.none )
         Vote newBallot ->
             ( { open | ballot = Just newBallot }
                 |> Model.Open
-                |> Model errors
             , vote newBallot)
         VoteAccepted newBallot ->
             ( { open | context =  Model.vote open.context newBallot }
                 |> Model.Open
-                |> Model errors
             , Cmd.none)
         Cancel citizen ->
             ( { open | ballot = Nothing }
                 |> Model.Open
-                |> Model errors
             , cancelVote citizen)
         VoteCancelled citizen ->
             ( { open | context =  Model.cancelVote open.context citizen, ballot = Nothing }
                 |> Model.Open
-                |> Model errors
             , Cmd.none)
         Close ->
-            ( Model.Open open |> Model errors
+            ( Model.Open open
             , close)
         PollCLosed ->
-            ( Model.Closed open.context |> Model errors
+            ( Model.Closed open.context
             , Cmd.none)
         _ ->
-            ( Model.Open open |> Model errors
+            ( Model.Open open
             , Cmd.none)
 
 

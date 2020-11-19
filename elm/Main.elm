@@ -12,6 +12,7 @@ import Model.Nation as Nation exposing (Citizen, Nation)
 import OtherHtml exposing (enlistForm)
 import Random
 import Sse exposing (EventKind)
+import Task
 import Time
 import Tools exposing (fold)
 import Workflow.Closed as Closed
@@ -46,7 +47,7 @@ update msg model =
         _ ->
             case model.workflow of
                 Guest _ _  -> Guest.update msg model
-                Model.Open open -> Open.update msg model.errors open
+                Model.Open open -> Open.update msg open |> Tuple.mapFirst (Model model.errors)
                 Closed _ -> Closed.update msg model
 
 
@@ -54,12 +55,14 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.batch
     [ messageReceiver handleEvent
-    , Time.every 1000 Tick
+    , Time.every 1000 SendHeartbeat
+    , Time.every 1000 (\now -> Error.Clean now |> ErrorMsg)
     ]
 
 handleEvent : (EventKind, Json.Decode.Value) -> Msg
 handleEvent event =
-    event |> Sse.through dispatch |> fold (\error -> Error.Add error |> ErrorMsg) identity
+    Sse.through dispatch event
+    |> fold (\error -> Error.Add error |> ErrorMsg) identity
 
 dispatch : Sse.Event -> Result String Msg
 dispatch event =

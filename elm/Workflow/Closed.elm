@@ -21,7 +21,7 @@ update msg model =
     case model.workflow of
         Closed context ->
             case msg of
-                Tick _ -> (model, Common.sendHeartbeat context)
+                SendHeartbeat _ -> (model, Common.sendHeartbeat context)
 
                 HeartbeatResp (Err e) ->
                     case e of

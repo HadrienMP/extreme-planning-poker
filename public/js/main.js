@@ -11361,8 +11361,14 @@ var $author$project$Main$init = function (_v0) {
 			A2($author$project$Model$Model$Guest, '', '')),
 		A2($elm$random$Random$generate, $author$project$Messages$GeneratedId, $author$project$Tools$uuid));
 };
-var $author$project$Messages$Tick = function (a) {
-	return {$: 'Tick', a: a};
+var $author$project$Model$Error$Clean = function (a) {
+	return {$: 'Clean', a: a};
+};
+var $author$project$Messages$ErrorMsg = function (a) {
+	return {$: 'ErrorMsg', a: a};
+};
+var $author$project$Messages$SendHeartbeat = function (a) {
+	return {$: 'SendHeartbeat', a: a};
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$time$Time$Every = F2(
@@ -11534,9 +11540,6 @@ var $elm$time$Time$every = F2(
 var $author$project$Model$Error$Add = function (a) {
 	return {$: 'Add', a: a};
 };
-var $author$project$Messages$ErrorMsg = function (a) {
-	return {$: 'ErrorMsg', a: a};
-};
 var $author$project$Messages$CitizenLeft = function (a) {
 	return {$: 'CitizenLeft', a: a};
 };
@@ -11700,7 +11703,14 @@ var $author$project$Main$subscriptions = function (_v0) {
 		_List_fromArray(
 			[
 				$author$project$Main$messageReceiver($author$project$Main$handleEvent),
-				A2($elm$time$Time$every, 1000, $author$project$Messages$Tick)
+				A2($elm$time$Time$every, 1000, $author$project$Messages$SendHeartbeat),
+				A2(
+				$elm$time$Time$every,
+				1000,
+				function (now) {
+					return $author$project$Messages$ErrorMsg(
+						$author$project$Model$Error$Clean(now));
+				})
 			]));
 };
 var $elm$core$Tuple$mapBoth = F3(
@@ -11710,6 +11720,14 @@ var $elm$core$Tuple$mapBoth = F3(
 		return _Utils_Tuple2(
 			funcA(x),
 			funcB(y));
+	});
+var $elm$core$Tuple$mapFirst = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
 	});
 var $author$project$Model$Error$Error = F2(
 	function (content, time) {
@@ -11738,6 +11756,10 @@ var $elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
+var $author$project$Model$Error$isNotOutdated = F2(
+	function (now, error) {
+		return ($elm$time$Time$posixToMillis(now) - $elm$time$Time$posixToMillis(error.time)) < 10000;
+	});
 var $author$project$Model$Error$update = F2(
 	function (msg, errors) {
 		switch (msg.$) {
@@ -11754,7 +11776,7 @@ var $author$project$Model$Error$update = F2(
 							[error]),
 						errors),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'Delete':
 				var error = msg.a;
 				return _Utils_Tuple2(
 					A2(
@@ -11762,6 +11784,14 @@ var $author$project$Model$Error$update = F2(
 						function (other) {
 							return !_Utils_eq(other, error);
 						},
+						errors),
+					$elm$core$Platform$Cmd$none);
+			default:
+				var now = msg.a;
+				return _Utils_Tuple2(
+					A2(
+						$elm$core$List$filter,
+						$author$project$Model$Error$isNotOutdated(now),
 						errors),
 					$elm$core$Platform$Cmd$none);
 		}
@@ -13084,7 +13114,7 @@ var $author$project$Workflow$Closed$update = F2(
 			_v1$6:
 			while (true) {
 				switch (msg.$) {
-					case 'Tick':
+					case 'SendHeartbeat':
 						return _Utils_Tuple2(
 							model,
 							$author$project$Common$sendHeartbeat(context));
@@ -13359,39 +13389,30 @@ var $author$project$Workflow$Open$vote = function (ballot) {
 			url: '/vote'
 		});
 };
-var $author$project$Workflow$Open$update = F3(
-	function (msg, errors, open) {
+var $author$project$Workflow$Open$update = F2(
+	function (msg, open) {
 		_v0$11:
 		while (true) {
 			switch (msg.$) {
-				case 'Tick':
+				case 'SendHeartbeat':
 					return _Utils_Tuple2(
-						A2(
-							$author$project$Model$Model$Model,
-							errors,
-							$author$project$Model$Model$Open(open)),
+						$author$project$Model$Model$Open(open),
 						$author$project$Common$sendHeartbeat(open.context));
 				case 'HeartbeatResp':
 					if (msg.a.$ === 'Err') {
 						var e = msg.a.a;
 						if (e.$ === 'BadStatus') {
 							return _Utils_Tuple2(
-								A2(
-									$author$project$Model$Model$Model,
-									errors,
-									function (citizen) {
-										return A2($author$project$Model$Model$Guest, citizen.id, citizen.name);
-									}(open.context.me)),
+								function (citizen) {
+									return A2($author$project$Model$Model$Guest, citizen.id, citizen.name);
+								}(open.context.me),
 								A2(
 									$elm$core$Platform$Cmd$map,
 									$author$project$Messages$ErrorMsg,
 									$author$project$Model$Error$addError('You were kicked out by the server (probably a restart)')));
 						} else {
 							return _Utils_Tuple2(
-								A2(
-									$author$project$Model$Model$Model,
-									errors,
-									$author$project$Model$Model$Open(open)),
+								$author$project$Model$Model$Open(open),
 								A2(
 									$elm$core$Platform$Cmd$map,
 									$author$project$Messages$ErrorMsg,
@@ -13404,121 +13425,88 @@ var $author$project$Workflow$Open$update = F3(
 				case 'Sync':
 					var state = msg.a;
 					return _Utils_Tuple2(
-						A2(
-							$author$project$Model$Model$Model,
-							errors,
-							$author$project$Model$Model$Open(
-								_Utils_update(
-									open,
-									{
-										context: A2($author$project$Model$Model$sync, state, open.context)
-									}))),
+						$author$project$Model$Model$Open(
+							_Utils_update(
+								open,
+								{
+									context: A2($author$project$Model$Model$sync, state, open.context)
+								})),
 						$elm$core$Platform$Cmd$none);
 				case 'CitizenLeft':
 					var citizen = msg.a;
 					return _Utils_eq(citizen, open.context.me) ? _Utils_Tuple2(
-						A2(
-							$author$project$Model$Model$Model,
-							errors,
-							A2($author$project$Model$Model$Guest, '', '')),
+						A2($author$project$Model$Model$Guest, '', ''),
 						$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
-						A2(
-							$author$project$Model$Model$Model,
-							errors,
-							$author$project$Model$Model$Open(
-								_Utils_update(
-									open,
-									{
-										context: A2($author$project$Model$Model$removeCitizen, open.context, citizen)
-									}))),
+						$author$project$Model$Model$Open(
+							_Utils_update(
+								open,
+								{
+									context: A2($author$project$Model$Model$removeCitizen, open.context, citizen)
+								})),
 						$elm$core$Platform$Cmd$none);
 				case 'NewCitizen':
 					var citizen = msg.a;
 					return _Utils_Tuple2(
-						A2(
-							$author$project$Model$Model$Model,
-							errors,
-							$author$project$Model$Model$Open(
-								_Utils_update(
-									open,
-									{
-										context: A2($author$project$Model$Model$enlist, open.context, citizen)
-									}))),
+						$author$project$Model$Model$Open(
+							_Utils_update(
+								open,
+								{
+									context: A2($author$project$Model$Model$enlist, open.context, citizen)
+								})),
 						$elm$core$Platform$Cmd$none);
 				case 'Vote':
 					var newBallot = msg.a;
 					return _Utils_Tuple2(
-						A2(
-							$author$project$Model$Model$Model,
-							errors,
-							$author$project$Model$Model$Open(
-								_Utils_update(
-									open,
-									{
-										ballot: $elm$core$Maybe$Just(newBallot)
-									}))),
+						$author$project$Model$Model$Open(
+							_Utils_update(
+								open,
+								{
+									ballot: $elm$core$Maybe$Just(newBallot)
+								})),
 						$author$project$Workflow$Open$vote(newBallot));
 				case 'VoteAccepted':
 					var newBallot = msg.a;
 					return _Utils_Tuple2(
-						A2(
-							$author$project$Model$Model$Model,
-							errors,
-							$author$project$Model$Model$Open(
-								_Utils_update(
-									open,
-									{
-										context: A2($author$project$Model$Model$vote, open.context, newBallot)
-									}))),
+						$author$project$Model$Model$Open(
+							_Utils_update(
+								open,
+								{
+									context: A2($author$project$Model$Model$vote, open.context, newBallot)
+								})),
 						$elm$core$Platform$Cmd$none);
 				case 'Cancel':
 					var citizen = msg.a;
 					return _Utils_Tuple2(
-						A2(
-							$author$project$Model$Model$Model,
-							errors,
-							$author$project$Model$Model$Open(
-								_Utils_update(
-									open,
-									{ballot: $elm$core$Maybe$Nothing}))),
+						$author$project$Model$Model$Open(
+							_Utils_update(
+								open,
+								{ballot: $elm$core$Maybe$Nothing})),
 						$author$project$Workflow$Open$cancelVote(citizen));
 				case 'VoteCancelled':
 					var citizen = msg.a;
 					return _Utils_Tuple2(
-						A2(
-							$author$project$Model$Model$Model,
-							errors,
-							$author$project$Model$Model$Open(
-								_Utils_update(
-									open,
-									{
-										ballot: $elm$core$Maybe$Nothing,
-										context: A2($author$project$Model$Model$cancelVote, open.context, citizen)
-									}))),
+						$author$project$Model$Model$Open(
+							_Utils_update(
+								open,
+								{
+									ballot: $elm$core$Maybe$Nothing,
+									context: A2($author$project$Model$Model$cancelVote, open.context, citizen)
+								})),
 						$elm$core$Platform$Cmd$none);
 				case 'Close':
 					return _Utils_Tuple2(
-						A2(
-							$author$project$Model$Model$Model,
-							errors,
-							$author$project$Model$Model$Open(open)),
+						$author$project$Model$Model$Open(open),
 						$author$project$Workflow$Open$close);
 				case 'PollCLosed':
 					return _Utils_Tuple2(
-						A2(
-							$author$project$Model$Model$Model,
-							errors,
-							$author$project$Model$Model$Closed(open.context)),
+						$author$project$Model$Model$Closed(open.context),
 						$elm$core$Platform$Cmd$none);
 				default:
 					break _v0$11;
 			}
 		}
 		return _Utils_Tuple2(
-			A2(
-				$author$project$Model$Model$Model,
-				errors,
-				$author$project$Model$Model$Open(open)),
+			$author$project$Model$Model$Open(open),
 			$elm$core$Platform$Cmd$none);
 	});
 var $author$project$Main$update = F2(
@@ -13541,7 +13529,10 @@ var $author$project$Main$update = F2(
 					return A2($author$project$Workflow$Guest$update, msg, model);
 				case 'Open':
 					var open = _v1.a;
-					return A3($author$project$Workflow$Open$update, msg, model.errors, open);
+					return A2(
+						$elm$core$Tuple$mapFirst,
+						$author$project$Model$Model$Model(model.errors),
+						A2($author$project$Workflow$Open$update, msg, open));
 				default:
 					return A2($author$project$Workflow$Closed$update, msg, model);
 			}
@@ -13997,4 +13988,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Messages.Msg","aliases":{"Model.Ballots.Ballot":{"args":[],"type":"{ citizen : Model.Nation.CitizenId, cardCode : Model.Deck.CardCode }"},"Model.Ballots.Ballots":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Deck.CardCode"},"Model.Deck.CardCode":{"args":[],"type":"String.String"},"Model.Nation.Citizen":{"args":[],"type":"{ id : Model.Nation.CitizenId, name : String.String }"},"Model.Nation.CitizenId":{"args":[],"type":"String.String"},"Model.Nation.Nation":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Nation.Citizen"},"Messages.State":{"args":[],"type":"{ nation : Model.Nation.Nation, ballots : Model.Ballots.Ballots }"},"Model.Error.Error":{"args":[],"type":"{ content : String.String, time : Time.Posix }"}},"unions":{"Messages.Msg":{"args":[],"tags":{"CmdResp":["Result.Result Http.Error ()"],"Tick":["Time.Posix"],"Sync":["Messages.State"],"HeartbeatResp":["Result.Result Http.Error ()"],"ErrorMsg":["Model.Error.Msg"],"UpdateName":["String.String"],"GeneratedId":["String.String"],"Enlist":[],"Enlisted":["Result.Result Http.Error Messages.State"],"NewCitizen":["Model.Nation.Citizen"],"Vote":["Model.Ballots.Ballot"],"VoteAccepted":["Model.Ballots.Ballot"],"Cancel":["Model.Nation.Citizen"],"VoteCancelled":["Model.Nation.Citizen"],"Close":[],"PollCLosed":[],"Start":[],"PollStarted":[],"CitizenLeft":["Model.Nation.Citizen"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Model.Error.Msg":{"args":[],"tags":{"Add":["String.String"],"Timed":["Model.Error.Error"],"Delete":["Model.Error.Error"]}},"Time.Posix":{"args":[],"tags":{"Posix":["Basics.Int"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Dict.NColor":{"args":[],"tags":{"Red":[],"Black":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Messages.Msg","aliases":{"Model.Ballots.Ballot":{"args":[],"type":"{ citizen : Model.Nation.CitizenId, cardCode : Model.Deck.CardCode }"},"Model.Ballots.Ballots":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Deck.CardCode"},"Model.Deck.CardCode":{"args":[],"type":"String.String"},"Model.Nation.Citizen":{"args":[],"type":"{ id : Model.Nation.CitizenId, name : String.String }"},"Model.Nation.CitizenId":{"args":[],"type":"String.String"},"Model.Nation.Nation":{"args":[],"type":"Dict.Dict Model.Nation.CitizenId Model.Nation.Citizen"},"Messages.State":{"args":[],"type":"{ nation : Model.Nation.Nation, ballots : Model.Ballots.Ballots }"},"Model.Error.Error":{"args":[],"type":"{ content : String.String, time : Time.Posix }"}},"unions":{"Messages.Msg":{"args":[],"tags":{"CmdResp":["Result.Result Http.Error ()"],"SendHeartbeat":["Time.Posix"],"HeartbeatResp":["Result.Result Http.Error ()"],"Sync":["Messages.State"],"ErrorMsg":["Model.Error.Msg"],"UpdateName":["String.String"],"GeneratedId":["String.String"],"Enlist":[],"Enlisted":["Result.Result Http.Error Messages.State"],"NewCitizen":["Model.Nation.Citizen"],"Vote":["Model.Ballots.Ballot"],"VoteAccepted":["Model.Ballots.Ballot"],"Cancel":["Model.Nation.Citizen"],"VoteCancelled":["Model.Nation.Citizen"],"Close":[],"PollCLosed":[],"Start":[],"PollStarted":[],"CitizenLeft":["Model.Nation.Citizen"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Model.Error.Msg":{"args":[],"tags":{"Add":["String.String"],"Timed":["Model.Error.Error"],"Delete":["Model.Error.Error"],"Clean":["Time.Posix"]}},"Time.Posix":{"args":[],"tags":{"Posix":["Basics.Int"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Dict.NColor":{"args":[],"tags":{"Red":[],"Black":[]}}}}})}});}(this));
