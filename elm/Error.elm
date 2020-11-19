@@ -1,4 +1,4 @@
-module Model.Error exposing (..)
+module Error exposing (..)
 
 import Html exposing (Html, i, li, text, ul)
 import Html.Attributes exposing (class, id)

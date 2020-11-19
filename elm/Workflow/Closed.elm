@@ -6,7 +6,7 @@ import Model.Deck as Deck exposing (Card, Deck)
 import Messages exposing (Msg(..))
 import Html exposing (..)
 import Html.Attributes exposing (id)
-import Model.Error as Error
+import Error as Error
 import Model.Model as Model exposing (Model, Workflow(..))
 import Model.Nation as Nation exposing (Citizen, Nation, citizenHtml)
 import OtherHtml exposing (startButton)

@@ -5,7 +5,7 @@ import Http
 import Model.Ballots as Ballots exposing (Ballot, hasVoted, Ballots)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(..))
-import Model.Error as Error
+import Error as Error
 import Model.Model as Model exposing (Model)
 import Model.Nation as Nation exposing (..)
 import Model.Deck exposing (Card, Deck, cardHtml2)

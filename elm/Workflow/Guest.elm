@@ -2,7 +2,7 @@ module Workflow.Guest exposing (..)
 import Common
 import Messages exposing (Msg(..))
 import Http exposing (Error(..))
-import Model.Error exposing (addError)
+import Error exposing (addError)
 import Model.Model as Model exposing (Model, Workflow(..))
 import Model.Nation as Nation exposing (Citizen)
 import Tools

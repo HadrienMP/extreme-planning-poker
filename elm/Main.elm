@@ -6,7 +6,7 @@ import Html exposing (..)
 import Json.Decode
 import Messages exposing (Msg(..))
 import Model.Ballots as Ballots exposing (Ballots)
-import Model.Error as Error
+import Error as Error
 import Model.Model as Model exposing (Model, Workflow(..))
 import Model.Nation as Nation exposing (Citizen, Nation)
 import OtherHtml exposing (enlistForm)
