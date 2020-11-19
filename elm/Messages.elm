@@ -2,8 +2,9 @@ module Messages exposing (..)
 
 import Http
 import Model.Ballots exposing (Ballot, Ballots)
+import Model.Error exposing (Error)
 import Model.Nation exposing (Citizen, Nation)
-import Time
+import Time exposing (Posix)
 
 type alias State =
     { nation: Nation
@@ -11,10 +12,13 @@ type alias State =
     }
 
 type Msg
-    = Error String
-    | CmdResp (Result Http.Error ())
+    = CmdResp (Result Http.Error ())
     | Tick Time.Posix
     | Sync State
+
+    | ErrorMsg String
+    | AddError Error
+    | DeleteError Error
 
     | UpdateName String
     | GeneratedId String

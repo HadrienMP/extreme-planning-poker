@@ -13,17 +13,11 @@ type alias Citizen =
     }
 type alias Nation = Dict CitizenId Citizen
 
-empty : Nation
-empty = Dict.fromList []
-
 enlist : Citizen -> Nation -> Nation
 enlist citizen nation = Dict.insert citizen.id citizen nation
 
 remove : Citizen -> Nation -> Nation
 remove citizen nation = Dict.remove citizen.id nation
-
-rename : CitizenId -> String -> Nation -> Nation
-rename id name nation = Dict.update id (\_ -> Just (Citizen id name)) nation
 
 citizens : Nation -> List Citizen
 citizens nation = Dict.values nation

@@ -1,12 +1,15 @@
 port module Main exposing (..)
 
 import Browser
-import Common
+import Common exposing (addError)
 import Html exposing (..)
+import Html.Attributes exposing (class, id)
+import Html.Events exposing (onClick)
 import Json.Decode
 import Messages exposing (Msg(..))
 import Model.Ballots as Ballots exposing (Ballots)
-import Model.Model as Model exposing (Context, Model(..))
+import Model.Error exposing (Error)
+import Model.Model as Model exposing (Model, Workflow(..))
 import Model.Nation as Nation exposing (Citizen, Nation)
 import OtherHtml exposing (enlistForm)
 import Random
@@ -31,18 +34,27 @@ port messageReceiver : ((EventKind, Json.Decode.Value) -> msg) -> Sub msg
 -- MODEL
 
 init : () -> (Model, Cmd Msg)
-init _ = (Guest "" "", Random.generate GeneratedId Tools.uuid)
+init _ = (Guest "" "" |> Model [], Random.generate GeneratedId Tools.uuid)
 
 -- UPDATE
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        Error error -> Debug.log error (model, Cmd.none)
+        ErrorMsg rawError ->
+            ( model
+            , addError rawError)
+        AddError error ->
+            ( Model.addError error model
+            , Cmd.none )
+        DeleteError error ->
+            ( Model.deleteError error model
+            , Cmd.none )
         _ ->
-            case model of
+            case model.workflow of
                 Guest _ _  -> Guest.update msg model
-                Model.Open open -> Open.update msg open
+                Model.Open open -> Open.update msg model.errors open
                 Closed _ -> Closed.update msg model
+
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
@@ -51,7 +63,7 @@ subscriptions _ = Sub.batch
 
 handleEvent : (EventKind, Json.Decode.Value) -> Msg
 handleEvent event =
-    event |> Sse.through dispatch |> fold Error identity
+    event |> Sse.through dispatch |> fold ErrorMsg identity
 
 dispatch : Sse.Event -> Result String Msg
 dispatch event =
@@ -69,10 +81,21 @@ dispatch event =
 view : Model -> Html Msg
 view model =
     div []
-        ( [h1 [] [text "Extreme Poker Planning"]]
-        ++ case model of
+        (
+        [ h1 [] [text "Extreme Poker Planning"]
+        , ul [id "errors"]
+             (List.map errorHtml model.errors)
+        ]
+        ++ case model.workflow of
             Guest _ guest -> [ enlistForm guest]
             Model.Open _ -> Open.view model
             Closed _ -> Closed.view model
         )
 
+errorHtml : Error -> Html Msg
+errorHtml error =
+    li [ onClick (DeleteError error) ]
+       [ i [ class "fas fa-exclamation-circle"] []
+       , text error.content
+       , i [ class "fas fa-times close"] []
+       ]

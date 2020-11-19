@@ -125,3 +125,51 @@ input {
 p {
   margin: 0;
 }
+
+#errors {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  margin: 0;
+  padding: 0;
+}
+
+#errors li {
+  cursor: pointer;
+  list-style-type: none;
+  border: 1px solid #a90000;
+  color: #970000;
+  margin: 10px 0;
+  border-radius: 5px;
+  background: #fff8f8;
+  min-width: 200px;
+  text-align: left;
+  padding: 10px 40px 10px 10px;
+  position: relative;
+  opacity: .7;
+}
+
+#errors li:hover {
+  opacity: 1;
+}
+
+#errors li i:first-child {
+  margin-right: 10px;
+  display: inline-block;
+}
+
+#errors li .close {
+  position: absolute;
+  right: 15px;
+  top: 13px;
+  vertical-align: baseline;
+  visibility: hidden;
+}
+
+#errors li:hover .close {
+  visibility: visible;
+}
+
+#errors li:first-child {
+  margin-top: 0;
+}

@@ -7,8 +7,11 @@ import Json.Encode
 import Messages exposing (Msg(..))
 import Model.Ballots as Ballots
 import Model.Model as Model exposing (..)
+import Model.Error as Error exposing (..)
 import Model.Nation as Nation exposing (Citizen)
 import SHA1
+import Task
+import Time
 
 sendHeartbeat : Context -> Cmd Msg
 sendHeartbeat context =
@@ -32,3 +35,9 @@ stateDecoder =
         Messages.State
         (Json.Decode.field "nation" Nation.decoder)
         (Json.Decode.field "ballots" Ballots.decoder)
+
+addError : String -> Cmd Msg
+addError error =
+    Time.now
+    |> Task.map (Error.Error error)
+    |> Task.perform AddError
