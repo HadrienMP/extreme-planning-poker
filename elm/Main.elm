@@ -8,7 +8,7 @@ import Html.Events exposing (onClick)
 import Json.Decode
 import Messages exposing (Msg(..))
 import Model.Ballots as Ballots exposing (Ballots)
-import Model.Error exposing (Error)
+import Model.Error as Error exposing (Error)
 import Model.Model as Model exposing (Model, Workflow(..))
 import Model.Nation as Nation exposing (Citizen, Nation)
 import OtherHtml exposing (enlistForm)
@@ -40,15 +40,11 @@ init _ = (Guest "" "" |> Model [], Random.generate GeneratedId Tools.uuid)
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        ErrorMsg rawError ->
-            ( model
-            , addError rawError)
-        AddError error ->
-            ( Model.addError error model
-            , Cmd.none )
-        DeleteError error ->
-            ( Model.deleteError error model
-            , Cmd.none )
+        ErrorMsg errorMsg ->
+            Error.update errorMsg model.errors
+            |> Tuple.mapBoth
+                (\updated -> { model | errors = updated } )
+                (Cmd.map ErrorMsg)
         _ ->
             case model.workflow of
                 Guest _ _  -> Guest.update msg model
@@ -63,7 +59,7 @@ subscriptions _ = Sub.batch
 
 handleEvent : (EventKind, Json.Decode.Value) -> Msg
 handleEvent event =
-    event |> Sse.through dispatch |> fold ErrorMsg identity
+    event |> Sse.through dispatch |> fold (\error -> Error.Add error |> ErrorMsg) identity
 
 dispatch : Sse.Event -> Result String Msg
 dispatch event =
@@ -81,21 +77,11 @@ dispatch event =
 view : Model -> Html Msg
 view model =
     div []
-        (
-        [ h1 [] [text "Extreme Poker Planning"]
-        , ul [id "errors"]
-             (List.map errorHtml model.errors)
-        ]
-        ++ case model.workflow of
+        ( [ h1 [] [text "Extreme Poker Planning"]
+          , Error.view model.errors |> Html.map ErrorMsg
+          ]
+          ++ case model.workflow of
             Guest _ guest -> [ enlistForm guest]
             Model.Open _ -> Open.view model
             Closed _ -> Closed.view model
         )
-
-errorHtml : Error -> Html Msg
-errorHtml error =
-    li [ onClick (DeleteError error) ]
-       [ i [ class "fas fa-exclamation-circle"] []
-       , text error.content
-       , i [ class "fas fa-times close"] []
-       ]

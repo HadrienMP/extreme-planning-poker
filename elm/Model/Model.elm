@@ -74,9 +74,3 @@ cancelVote context citizen = { context | ballots = Ballots.remove citizen.id con
 
 reset : Context -> Context
 reset context = { context | ballots = Ballots.empty }
-
-addError : Error -> Model -> Model
-addError error model = { model | errors = [error] ++ model.errors }
-
-deleteError : Error -> Model -> Model
-deleteError error model = { model | errors = List.filter (\other -> other /= error) model.errors }

@@ -2,7 +2,7 @@ module Messages exposing (..)
 
 import Http
 import Model.Ballots exposing (Ballot, Ballots)
-import Model.Error exposing (Error)
+import Model.Error as Error exposing (Error)
 import Model.Nation exposing (Citizen, Nation)
 import Time exposing (Posix)
 
@@ -16,9 +16,7 @@ type Msg
     | Tick Time.Posix
     | Sync State
 
-    | ErrorMsg String
-    | AddError Error
-    | DeleteError Error
+    | ErrorMsg Error.Msg
 
     | UpdateName String
     | GeneratedId String
