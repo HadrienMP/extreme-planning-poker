@@ -2,7 +2,7 @@ module Messages exposing (..)
 
 import Http
 import Model.Ballots exposing (Ballot, Ballots)
-import Model.Error as Error exposing (Error)
+import Model.Error as Error
 import Model.Nation exposing (Citizen, Nation)
 import Time exposing (Posix)
 

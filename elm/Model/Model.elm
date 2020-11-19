@@ -4,7 +4,7 @@ import Messages exposing (State)
 import Model.Ballots as Ballots exposing (Ballot, Ballots)
 import Model.Deck exposing (Deck)
 import Model.Decks as Decks
-import Model.Error exposing (Error, Errors)
+import Model.Error exposing (Errors)
 import Model.Nation as Nation exposing (Citizen, CitizenId, Nation)
 import SHA1
 
