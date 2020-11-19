@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "elm": "elm make ./elm/Main.elm --output=./public/js/main.js",
+    "elm": "./elm-make.sh",
     "dev": "concurrently --kill-others \"npm run node-live\" \"npm run elm-live\"",
     "node-live": "nodemon ./bin/www",
     "elm-live": "elm-live ./elm/Main.elm --dir=./public/js --no-server -- --output=./public/js/main.js --debug"
