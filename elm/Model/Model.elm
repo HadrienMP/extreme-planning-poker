@@ -4,6 +4,7 @@ import Messages exposing (State)
 import Model.Ballots as Ballots exposing (Ballot, Ballots)
 import Model.Deck exposing (Deck)
 import Model.Decks as Decks
+import Model.Error exposing (Error, Errors)
 import Model.Nation as Nation exposing (Citizen, CitizenId, Nation)
 import SHA1
 
@@ -20,10 +21,15 @@ type alias OpenModel =
     , ballot: Maybe Ballot
     }
 
-type Model
+type Workflow
     = Guest CitizenId String
     | Open OpenModel
     | Closed Context
+
+type alias Model =
+    { errors: Errors
+    , workflow: Workflow
+    }
 
 
 
@@ -42,7 +48,7 @@ footprint context =
     |> SHA1.fromString
 
 openFrom : Citizen -> State -> Model
-openFrom citizen state = Open (OpenModel (contextFrom citizen state) Nothing)
+openFrom citizen state = Model [] (Open (OpenModel (contextFrom citizen state) Nothing))
 
 contextFrom : Citizen -> State -> Context
 contextFrom citizen state =
@@ -53,24 +59,12 @@ contextFrom citizen state =
     , updatedName = citizen.name
     }
 
-rename : Context -> Context
-rename context =
-    { context
-    | nation = context.nation |> Nation.rename context.me.id context.updatedName
-    , me = Citizen context.me.id context.updatedName
-    }
-
-updateName : Context -> String -> Context
-updateName context name = { context | updatedName = name }
 
 enlist : Context -> Citizen -> Context
 enlist context citizen = { context | nation = Nation.enlist citizen context.nation }
 
 removeCitizen : Context -> Citizen -> Context
 removeCitizen context citizen = { context | nation = Nation.remove citizen context.nation }
-
-updateNation : Context -> Nation -> Context
-updateNation context nation = { context | nation = nation }
 
 vote : Context -> Ballot -> Context
 vote context newBallot = { context | ballots = Ballots.add newBallot context.ballots }

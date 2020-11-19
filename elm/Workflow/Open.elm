@@ -5,55 +5,86 @@ import Http
 import Model.Ballots as Ballots exposing (Ballot, hasVoted, Ballots)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(..))
-import Model.Model as Model exposing (Context, Model(..), OpenModel)
+import Model.Error as Error exposing (Errors)
+import Model.Model as Model exposing (Model)
 import Model.Nation as Nation exposing (..)
 import Model.Deck exposing (Card, Deck, cardHtml2)
 import Messages exposing (Msg(..))
-import Model.Model exposing (Context, Model(..))
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, id)
 import Model.Nation exposing (Citizen, Nation)
-import OtherHtml exposing (closeButton, enlistForm)
+import OtherHtml exposing (closeButton)
+import Tools
 
 
 -- ###################################################
 -- UPDATE
 -- ###################################################
 
-update : Msg -> Model.OpenModel -> (Model, Cmd Msg)
+update : Msg -> Model.OpenModel -> (Model.Workflow, Cmd Msg)
 update msg open =
     case msg of
-        Tick _ -> (Model.Open open, Common.sendHeartbeat open.context)
+        SendHeartbeat _ ->
+            ( Model.Open open, Common.sendHeartbeat open.context )
+
+        HeartbeatResp (Err e) ->
+            case e of
+                Http.BadStatus _ ->
+                    ( open.context.me
+                        |> (\citizen -> Model.Guest citizen.id citizen.name)
+                    , "You were kicked out by the server (probably a restart)"
+                        |> Error.addError
+                        |> Cmd.map ErrorMsg
+                    )
+                _ ->
+                    ( Model.Open open
+                    , Tools.httpErrorToString e
+                        |> Error.addError
+                        |> Cmd.map ErrorMsg
+                    )
+
         Sync state ->
-            ( Model.Open { open | context = Model.sync state open.context }
+            ( { open | context = Model.sync state open.context }
+                |> Model.Open
             , Cmd.none )
+
         CitizenLeft citizen ->
             if citizen == open.context.me then
-                ( Guest "" "", Cmd.none )
-            else
-                ( Model.Open { open | context = Model.removeCitizen open.context citizen }
+                ( Model.Guest "" ""
                 , Cmd.none )
-        UpdateName _ ->
-            ( Debug.todo "Allow users to change their name"
-            , Cmd.none )
+            else
+                ( { open | context = Model.removeCitizen open.context citizen }
+                    |> Model.Open
+                , Cmd.none )
         NewCitizen citizen ->
-            ( Model.Open { open | context = Model.enlist open.context citizen }
+            ( { open | context = Model.enlist open.context citizen }
+                |> Model.Open
             , Cmd.none )
         Vote newBallot ->
-            ( Model.Open { open | ballot = Just newBallot }
+            ( { open | ballot = Just newBallot }
+                |> Model.Open
             , vote newBallot)
         VoteAccepted newBallot ->
-            ( Model.Open { open | context =  Model.vote open.context newBallot }
+            ( { open | context =  Model.vote open.context newBallot }
+                |> Model.Open
             , Cmd.none)
         Cancel citizen ->
-            ( Model.Open { open | ballot = Nothing }
+            ( { open | ballot = Nothing }
+                |> Model.Open
             , cancelVote citizen)
         VoteCancelled citizen ->
-            ( Model.Open { open | context =  Model.cancelVote open.context citizen, ballot = Nothing }
+            ( { open | context =  Model.cancelVote open.context citizen, ballot = Nothing }
+                |> Model.Open
             , Cmd.none)
-        Close -> (Model.Open open, close)
-        PollCLosed -> ( Model.Closed open.context, Cmd.none)
-        _ -> (Model.Open open, Cmd.none)
+        Close ->
+            ( Model.Open open
+            , close)
+        PollCLosed ->
+            ( Model.Closed open.context
+            , Cmd.none)
+        _ ->
+            ( Model.Open open
+            , Cmd.none)
 
 
 vote : Ballots.Ballot -> Cmd Msg
@@ -86,10 +117,9 @@ close =
 
 view : Model -> List (Html Msg)
 view model =
-    case model of
+    case model.workflow of
         Model.Open open ->
-            [ enlistForm open.context.updatedName
-            , div [id "nation"]
+            [ div [id "nation"]
                   (  votersHtml open.context.nation open.context.ballots
                   ++ [closeButton]
                   )

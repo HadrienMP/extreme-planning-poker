@@ -4,11 +4,13 @@ import Http
 import Model.Ballots as Ballots exposing (Ballots)
 import Model.Deck as Deck exposing (Card, Deck)
 import Messages exposing (Msg(..))
-import Model.Model as Model exposing (Context, Model(..))
 import Html exposing (..)
 import Html.Attributes exposing (id)
+import Model.Error as Error
+import Model.Model as Model exposing (Model, Workflow(..))
 import Model.Nation as Nation exposing (Citizen, Nation, citizenHtml)
-import OtherHtml exposing (enlistForm, startButton)
+import OtherHtml exposing (startButton)
+import Tools
 
 -- ###################################################
 -- UPDATE
@@ -16,20 +18,45 @@ import OtherHtml exposing (enlistForm, startButton)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-    case model of
+    case model.workflow of
         Closed context ->
             case msg of
-                Tick _ -> (model, Common.sendHeartbeat context)
-                Sync sync -> (Closed (Model.sync sync context), Cmd.none)
+                SendHeartbeat _ -> (model, Common.sendHeartbeat context)
+
+                HeartbeatResp (Err e) ->
+                    case e of
+                        Http.BadStatus _ ->
+                            ( context.me
+                                |> (\citizen -> Model.Guest citizen.id citizen.name)
+                                |> Model model.errors
+                            , "You were kicked out by the server (probably a restart)"
+                                |> Error.addError
+                                |> Cmd.map ErrorMsg
+                            )
+                        _ ->
+                            ( model
+                            , Tools.httpErrorToString e
+                                |> Error.addError
+                                |> Cmd.map ErrorMsg
+                            )
+
+                Sync sync ->
+                    ( { model | workflow = (Closed (Model.sync sync context)) }
+                    , Cmd.none)
                 CitizenLeft citizen ->
                     if citizen == context.me then
-                        ( Guest "" "", Cmd.none )
+                        ( { model | workflow = Guest "" "" }
+                        , Cmd.none )
                     else
-                        ( Closed (Model.removeCitizen context citizen)
+                        ( Model.removeCitizen context citizen
+                            |> Closed
+                            |> Model model.errors
                         , Cmd.none )
                 Start -> (model, start)
                 PollStarted ->
-                    ( Open ( Model.OpenModel (Model.reset context) Nothing)
+                    ( Model.OpenModel (Model.reset context) Nothing
+                        |> Open
+                        |> Model model.errors
                     , Cmd.none)
                 _ -> (model, Cmd.none)
         _ -> (model, Cmd.none)
@@ -48,10 +75,9 @@ start =
 
 view : Model -> List (Html Msg)
 view model =
-    case model of
+    case model.workflow of
         Closed context ->
-            [ enlistForm context.updatedName
-            , div [id "nation"]
+            [ div [id "nation"]
                   (  ballotsHtml context.nation context.ballots context.deck
                   ++ [ startButton ]
                   )

@@ -7,15 +7,18 @@ import Json.Encode
 import Messages exposing (Msg(..))
 import Model.Ballots as Ballots
 import Model.Model as Model exposing (..)
+import Model.Error as Error exposing (..)
 import Model.Nation as Nation exposing (Citizen)
 import SHA1
+import Task
+import Time
 
-sendHeartbeat : Context -> Cmd Msg
+sendHeartbeat : Context -> Cmd Messages.Msg
 sendHeartbeat context =
     Http.post
     { url = "/nation/alive"
     , body = Http.jsonBody (heartbeat context)
-    , expect = Http.expectWhatever CmdResp
+    , expect = Http.expectWhatever HeartbeatResp
     }
 
 heartbeat: Context -> Json.Encode.Value

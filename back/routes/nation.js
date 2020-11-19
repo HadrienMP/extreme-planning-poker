@@ -36,7 +36,7 @@ router.post('/alive', (req, res) => {
     }
 });
 
-router.post('/leave', (req) => {
+router.post('/leave', req => {
     let citizen = parseCitizen(req.body);
     nation.leave(citizen)
     ballots.cancel(citizen)

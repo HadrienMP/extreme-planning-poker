@@ -1,10 +1,9 @@
 module Workflow.Guest exposing (..)
 import Common
 import Messages exposing (Msg(..))
-import Model.Ballots as Ballots
-import Model.Decks as Decks
-import Model.Model as Model exposing (Context, Model(..))
-import Http
+import Http exposing (Error(..))
+import Model.Error exposing (addError)
+import Model.Model as Model exposing (Model, Workflow(..))
 import Model.Nation as Nation exposing (Citizen)
 import Tools
 
@@ -15,20 +14,29 @@ import Tools
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-    case model of
+    case model.workflow of
         Guest id guest ->
             case msg of
-                Enlist -> (model, serverEnlist (Citizen id guest))
-                GeneratedId generated -> (Guest generated guest, Cmd.none)
+                Enlist ->
+                    ( model
+                    , serverEnlist (Citizen id guest))
+                GeneratedId generated ->
+                    ( Guest generated guest |> Model model.errors
+                    , Cmd.none)
                 Enlisted response ->
                     case response of
-                        Err e ->
-                            ( Debug.log (Tools.httpErrorToString e) model
-                            , Cmd.none )
+                        Err (BadStatus _) ->
+                            ( model
+                            , addError "This name is taken, please try another" |> Cmd.map ErrorMsg )
+                        Err error ->
+                            ( model
+                            , addError (Tools.httpErrorToString error) |> Cmd.map ErrorMsg )
                         Ok state ->
                             ( Model.openFrom (Citizen id guest) state
                             , Cmd.none )
-                UpdateName newName  -> (Guest id newName, Cmd.none)
+                UpdateName newName  ->
+                    ( Guest id newName |> Model model.errors
+                    , Cmd.none )
                 _ -> (model, Cmd.none)
         _ -> (model, Cmd.none)
 
