@@ -13,12 +13,12 @@ import SHA1
 import Task
 import Time
 
-sendHeartbeat : Context -> Cmd Msg
+sendHeartbeat : Context -> Cmd Messages.Msg
 sendHeartbeat context =
     Http.post
     { url = "/nation/alive"
     , body = Http.jsonBody (heartbeat context)
-    , expect = Http.expectWhatever CmdResp
+    , expect = Http.expectWhatever HeartbeatResp
     }
 
 heartbeat: Context -> Json.Encode.Value
@@ -35,9 +35,3 @@ stateDecoder =
         Messages.State
         (Json.Decode.field "nation" Nation.decoder)
         (Json.Decode.field "ballots" Ballots.decoder)
-
-addError : String -> Cmd Msg
-addError error =
-    Time.now
-    |> Task.map (Error.Error error)
-    |> Task.perform AddError

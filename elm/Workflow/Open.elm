@@ -5,7 +5,7 @@ import Http
 import Model.Ballots as Ballots exposing (Ballot, hasVoted, Ballots)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(..))
-import Model.Error exposing (Errors)
+import Model.Error as Error exposing (Errors)
 import Model.Model as Model exposing (Model)
 import Model.Nation as Nation exposing (..)
 import Model.Deck exposing (Card, Deck, cardHtml2)
@@ -14,6 +14,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, classList, id)
 import Model.Nation exposing (Citizen, Nation)
 import OtherHtml exposing (closeButton)
+import Tools
 
 
 -- ###################################################
@@ -26,11 +27,30 @@ update msg errors open =
         Tick _ ->
             ( Model.Open open |> Model errors
             , Common.sendHeartbeat open.context )
+
+        HeartbeatResp (Err e) ->
+            case e of
+                Http.BadStatus _ ->
+                    ( open.context.me
+                        |> (\citizen -> Model.Guest citizen.id citizen.name)
+                        |> Model errors
+                    , "You were kicked out by the server (probably a restart)"
+                        |> Error.addError
+                        |> Cmd.map ErrorMsg
+                    )
+                _ ->
+                    ( Model.Open open |> Model errors
+                    , Tools.httpErrorToString e
+                        |> Error.addError
+                        |> Cmd.map ErrorMsg
+                    )
+
         Sync state ->
             ( { open | context = Model.sync state open.context }
                 |> Model.Open
                 |> Model errors
             , Cmd.none )
+
         CitizenLeft citizen ->
             if citizen == open.context.me then
                 ( Model.Guest "" "" |> Model errors

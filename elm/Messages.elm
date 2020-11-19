@@ -15,6 +15,7 @@ type Msg
     = CmdResp (Result Http.Error ())
     | Tick Time.Posix
     | Sync State
+    | HeartbeatResp (Result Http.Error ())
 
     | ErrorMsg Error.Msg
 

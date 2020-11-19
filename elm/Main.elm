@@ -1,10 +1,8 @@
 port module Main exposing (..)
 
 import Browser
-import Common exposing (addError)
+import Common
 import Html exposing (..)
-import Html.Attributes exposing (class, id)
-import Html.Events exposing (onClick)
 import Json.Decode
 import Messages exposing (Msg(..))
 import Model.Ballots as Ballots exposing (Ballots)
@@ -55,7 +53,9 @@ update msg model =
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.batch
-    [ messageReceiver handleEvent, Time.every 1000 Tick ]
+    [ messageReceiver handleEvent
+    , Time.every 1000 Tick
+    ]
 
 handleEvent : (EventKind, Json.Decode.Value) -> Msg
 handleEvent event =

@@ -6,9 +6,11 @@ import Model.Deck as Deck exposing (Card, Deck)
 import Messages exposing (Msg(..))
 import Html exposing (..)
 import Html.Attributes exposing (id)
+import Model.Error as Error
 import Model.Model as Model exposing (Model, Workflow(..))
 import Model.Nation as Nation exposing (Citizen, Nation, citizenHtml)
 import OtherHtml exposing (startButton)
+import Tools
 
 -- ###################################################
 -- UPDATE
@@ -20,6 +22,24 @@ update msg model =
         Closed context ->
             case msg of
                 Tick _ -> (model, Common.sendHeartbeat context)
+
+                HeartbeatResp (Err e) ->
+                    case e of
+                        Http.BadStatus _ ->
+                            ( context.me
+                                |> (\citizen -> Model.Guest citizen.id citizen.name)
+                                |> Model model.errors
+                            , "You were kicked out by the server (probably a restart)"
+                                |> Error.addError
+                                |> Cmd.map ErrorMsg
+                            )
+                        _ ->
+                            ( model
+                            , Tools.httpErrorToString e
+                                |> Error.addError
+                                |> Cmd.map ErrorMsg
+                            )
+
                 Sync sync ->
                     ( { model | workflow = (Closed (Model.sync sync context)) }
                     , Cmd.none)
