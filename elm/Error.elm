@@ -27,10 +27,10 @@ update msg errors =
         Add content -> ( errors, addError content )
         Timed error -> ( [error] ++ errors, Cmd.none )
         Delete error -> ( List.filter (\other -> other /= error) errors, Cmd.none )
-        Clean now -> ( List.filter (isNotOutdated now) errors, Cmd.none )
+        Clean now -> ( List.filter (isVisible now) errors, Cmd.none )
 
-isNotOutdated : Posix -> Error -> Bool
-isNotOutdated now error =
+isVisible : Posix -> Error -> Bool
+isVisible now error =
     (Time.posixToMillis now) - (Time.posixToMillis error.time) < 10000
 
 

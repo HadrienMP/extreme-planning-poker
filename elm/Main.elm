@@ -12,7 +12,6 @@ import Model.Nation as Nation exposing (Citizen, Nation)
 import OtherHtml exposing (enlistForm)
 import Random
 import Sse exposing (EventKind)
-import Task
 import Time
 import Tools exposing (fold)
 import Workflow.Closed as Closed
