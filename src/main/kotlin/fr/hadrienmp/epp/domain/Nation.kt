@@ -1,4 +1,4 @@
-package fr.hadrienmp.epp.api.web
+package fr.hadrienmp.epp.domain
 
 import fr.hadrienmp.lib.functional.success
 import kotlinx.collections.immutable.PersistentMap

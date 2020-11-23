@@ -1,5 +1,9 @@
 package fr.hadrienmp.epp.api.web
 
+import fr.hadrienmp.epp.domain.Citizen
+import fr.hadrienmp.epp.domain.Enlisted
+import fr.hadrienmp.epp.domain.Nation
+import fr.hadrienmp.epp.domain.enlist
 import fr.hadrienmp.lib.web.*
 import io.javalin.Javalin
 import org.slf4j.Logger
