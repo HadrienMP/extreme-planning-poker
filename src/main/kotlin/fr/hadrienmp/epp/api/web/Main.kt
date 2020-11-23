@@ -5,24 +5,15 @@ import fr.hadrienmp.epp.domain.Enlisted
 import fr.hadrienmp.epp.domain.Nation
 import fr.hadrienmp.epp.domain.enlist
 import fr.hadrienmp.lib.web.*
-import io.javalin.Javalin
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 val routesLog: Logger = LoggerFactory.getLogger("Routes")
 
 fun main(args: Array<String>) {
-    val app = Javalin
-        .create {
-            logRequests(it)
-            it.addStaticFiles("/public")
-        }
-        .start(port(arguments(args.toList())))
+    val app = javalin(args)
 
-    app.get("/") { ctx ->
-        ctx.html(render("index.pug"))
-    }
-
+    app.get("/") { ctx -> ctx.html(render("index.pug")) }
     app.sse("/sse", sseClients::subscribe)
 
     app.post("/nation/enlist") { ctx ->
