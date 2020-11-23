@@ -10,9 +10,7 @@ val routesLog: Logger = LoggerFactory.getLogger("Routes")
 fun main(args: Array<String>) {
     val app = Javalin
         .create {
-            it.requestLogger { ctx, executionTimeMs ->
-                routesLog.info("[${ctx.method()}] - ${ctx.path()} - $executionTimeMs ms")
-            }
+            logRequests(it)
             it.addStaticFiles("/public")
         }
         .start(port(arguments(args.toList())))
