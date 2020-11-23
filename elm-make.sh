@@ -1,1 +1,1 @@
-elm make ./elm/Main.elm --output=./public/js/main.js --optimize
+elm make ./elm/Main.elm --output=.src/main/resources/public/js/main.js --optimize
