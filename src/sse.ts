@@ -30,12 +30,7 @@ export function init(req: Request, res: Response) {
     });
 }
 
-export function send ()
-
-module.exports.send = (data, event) => {
-    let eventSse = ``;
-    if (event) {
-        eventSse = `event: ${event}\n`;
-    }
-    clients.forEach(client => client.res.write(`${eventSse}data: ${JSON.stringify(data)}\n\n`));
+export function send(data: any, event: string = "") {
+    let eventSse = event ? `event: ${event}\n` : ``;
+    clients.forEach(client => client.response.write(`${eventSse}data: ${JSON.stringify(data)}\n\n`));
 }

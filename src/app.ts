@@ -1,7 +1,7 @@
-import express from 'express';
+import express, {Request, Response} from 'express';
 import logger from "morgan";
 import favicon from 'serve-favicon';
-import { router as indexRouter } from './routes/Index';
+import * as sse from './sse';
 import * as path from "path";
 
 const app = express();
@@ -15,7 +15,8 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use(favicon(path.join(__dirname,'../public','images','favicon.ico')));
 app.use(express.json());
 
-app.use("/", indexRouter);
+app.get('/', (req: Request, res: Response) => { res.render('index'); });
+app.use("/sse", sse.init);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

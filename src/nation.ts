@@ -1,0 +1,51 @@
+import express, {Request, Response} from "express";
+
+export const router = express.Router({strict: true});
+
+router.post('/enlist', (req: Request, res: Response) => {
+    let citizen = parseCitizen(req.body);
+    if (nation.isCitizen(citizen.id) || nation.isNameTaken(citizen)) {
+        res.status(400).json({
+            "status": 400,
+            "reason": "Already enlisted citizen"
+        }).end()
+    } else {
+        nation.enlist(citizen);
+        bus.publishFront("enlisted", citizen)
+        res.json(state());
+    }
+});
+
+router.post('/alive', (req, res) => {
+    let citizen = parseCitizen(req.body.citizen);
+    if (!nation.isCitizen(citizen.id)) {
+        res.status(400).json({
+            "status": 400,
+            "reason": "You are not an enlisted citizen"
+        }).end()
+    } else {
+        if (req.body.footprint !== footprint()) {
+            bus.publishFront("sync", state());
+        }
+        nation.alive(citizen);
+        res.sendStatus(200)
+    }
+});
+
+router.post('/leave', req => {
+    let citizen = parseCitizen(req.body);
+    nation.leave(citizen)
+    ballots.cancel(citizen)
+    bus.publishFront("citizenLeft", citizen)
+});
+
+const state = () => ({
+    nation: nation.all(),
+    ballots: ballots.all()
+});
+
+const footprint = () => hash(nation.footprint() + ballots.footprint());
+
+const parseCitizen = probablyCitizen => ({id: probablyCitizen.id, name: probablyCitizen.name});
+
+module.exports = router;
