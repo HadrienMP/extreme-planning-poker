@@ -143,6 +143,7 @@ p {
   border-radius: 5px;
   background: #fff8f8;
   min-width: 200px;
+  max-width: 500px;
   text-align: left;
   padding: 10px 40px 10px 10px;
   position: relative;

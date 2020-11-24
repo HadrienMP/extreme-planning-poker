@@ -1,4 +1,4 @@
-package fr.hadrienmp.epp.spi
+package fr.hadrienmp.epp.infra
 
 import fr.hadrienmp.epp.domain.Nation
 import fr.hadrienmp.epp.domain.NationUpdated
@@ -16,7 +16,8 @@ fun <T : NationUpdated> updateNation(updateFunction: (Nation) -> Result<T, Strin
     return updateFunction(current.nation)
         .flatMap { updated ->
             val candidate = next(current, updated.nation)
-            when (safelyUpdate(candidate)) {
+            safelyUpdate(candidate)
+            when (versionedNation.get()) {
                 candidate -> updated.success()
                 else -> "Nation version conflict".error()
             }

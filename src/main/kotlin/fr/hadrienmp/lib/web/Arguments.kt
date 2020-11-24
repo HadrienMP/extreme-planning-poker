@@ -15,7 +15,7 @@ data class Arguments(val value: Map<String, String> = emptyMap()) {
     fun get(key: String) = Either.fromNullable(value[key])
 }
 
-fun port(arguments: Arguments): Int = arguments.get("port").flatMap(String::parseInt).getOrElse { 8080 }
+fun port(arguments: Arguments): Int = arguments.get("port").flatMap(String::parseInt).getOrElse { 3000 }
 
 private fun String.parseInt(): Either<NumberFormatException, Int> = try {
     toInt().right()
