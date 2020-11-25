@@ -1,27 +1,42 @@
 import express, {Request, Response} from "express";
-import {Citizen, enlist, Guest, isCitizen, Nation} from "./domain/nation";
-import {Map} from "immutable";
+import {Error, Guest, isCitizen} from "./domain/nation";
 import * as bus from "./infrastructure/bus";
-import * as nationStore from "./nationStore";
+import * as nation from "./nationStore";
 
 
 export const router = express.Router({strict: true});
 
+function send(res: Response, error: JsonError) {
+    res.status(error.status).json(error).end();
+}
+
 router.post('/enlist', (req: Request, res: Response) => {
-    enlist(parsePerson(req.body), nationStore.get())
-        .onSuccess(nationStore.add)
+    nation.enlist(parsePerson(req.body))
         .onSuccess(citizen => bus.publishFront("enlisted", citizen))
         .onSuccess(_ => res.json(state()))
-        .mapError((error): JsonError => ({status: 400, reason: error}))
-        .onError((error: JsonError) => res.status(error.status).json(error).end());
+        .mapError(clientError)
+        .onError(error => send(res, error));
 });
 
-type JsonError = { status: number, reason: string }
+class JsonError {
+    readonly status: number;
+    readonly reason: string;
+
+    constructor(status: number, reason: string) {
+        this.status = status;
+        this.reason = reason;
+    }
+}
+const clientError = (error: Error) => new JsonError(400, error);
 
 router.post('/alive', (req: Request, res: Response) => {
     let citizen = parsePerson(req.body);
-    let nation: Nation = Map({});
-    if (isCitizen(citizen, nation)) {
+    nation.findBy(citizen.id)
+        .mapError(error => {
+            {status: 400, reason: error}
+        })
+        .mapError((error): JsonError => ({status: 400, reason: error}))
+    if (isCitizen(citizen)) {
         if (req.body.footprint !== footprint()) {
             bus.publishFront("sync", state());
         }

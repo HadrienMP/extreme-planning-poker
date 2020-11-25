@@ -1,4 +1,3 @@
-import {Result, success, fail} from "../lib/Result";
 import {Map} from "immutable";
 
 export type GuestId = string;
@@ -25,12 +24,6 @@ export class Citizen {
 
 export type Nation = Map<CitizenId, Citizen>
 export type Error = string
-
-export const enlist = (guest: Guest, nation: Nation): Result<Citizen, Error> => {
-    if (guest.id in nation) return fail("Already enlisted")
-    if (guest.name in nation.values()) return fail("Name is already taken")
-    return success(new Citizen(guest.id, guest.name, new Date()));
-};
 
 export const isCitizen = (citizen: Citizen, nation: Nation): boolean => nation.has(citizen.id)
 
