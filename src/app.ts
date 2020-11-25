@@ -1,7 +1,7 @@
 import express, {Request, Response} from 'express';
 import logger from "morgan";
 import favicon from 'serve-favicon';
-import * as sse from './sse';
+import * as sse from './infrastructure/sse';
 import * as path from "path";
 
 const app = express();

@@ -1,19 +1,16 @@
-import {Result} from "typescript-monads";
+import {Result, success, fail} from "../lib/Result";
+import {Map} from "immutable";
 
-type CitizenId = string;
-class Citizen {
-    id: CitizenId;
-    name: string;
+export type CitizenId = string;
+export type Citizen = { readonly id: CitizenId, readonly name: string, readonly lastSeen: Date}
+export type Nation = Map<CitizenId, Citizen>
+export type Error = string
 
-    constructor(id: CitizenId, name: string) {
-        this.id = id;
-        this.name = name;
-    }
-}
-type Nation = Map<CitizenId, Citizen>
-
-export const enlist = (citizen: Citizen, nation: Nation) => {
-    if (citizen.id in nation) return Result.fail("Already enlisted")
-    if (citizen.name in nation.values()) return Result.fail("Name is already taken")
-    nation.values
+export const enlist = (citizen: Citizen, nation: Nation): Result<Nation, Error> => {
+    if (citizen.id in nation) return fail("Already enlisted")
+    if (citizen.name in nation.values()) return fail("Name is already taken")
+    return success(nation.set(citizen.id, citizen));
 };
+
+export const isCitizen = (citizen: Citizen, nation: Nation): boolean => nation.has(citizen.id)
+
