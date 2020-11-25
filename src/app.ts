@@ -3,6 +3,7 @@ import logger from "morgan";
 import favicon from 'serve-favicon';
 import * as sse from './infrastructure/sse';
 import * as path from "path";
+import * as bus from "./infrastructure/bus"
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 
 app.get('/', (req: Request, res: Response) => { res.render('index'); });
 app.use("/sse", sse.init);
+bus.init();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
