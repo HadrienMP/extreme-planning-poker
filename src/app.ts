@@ -20,6 +20,7 @@ app.get('/', (req: Request, res: Response) => { res.render('index'); });
 app.use("/sse", sse.init);
 bus.init();
 
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);

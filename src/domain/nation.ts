@@ -20,6 +20,9 @@ export class Citizen {
         this.name = name;
         this.lastSeen = lastSeen;
     }
+
+    alive = (): Citizen => new Citizen(this.id, this.name, new Date());
+    isAlive = (): boolean => (new Date().getTime() - this.lastSeen.getTime()) < 2000;
 }
 
 export type Nation = Map<CitizenId, Citizen>
