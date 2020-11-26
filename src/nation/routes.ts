@@ -1,7 +1,8 @@
 import express, {Request, Response} from "express";
-import {Error, Guest} from "./domain/nation";
-import * as bus from "./infrastructure/bus";
-import * as nation from "./nationStore";
+import {Guest, Nation} from "./model";
+import * as bus from "../infrastructure/bus";
+import * as nation from "./store";
+import {clientError, send} from "../lib/ExpressUtils";
 
 setInterval(() => {
     nation.radiateAuto().forEach(citizen => bus.publish("citizenLeft", citizen));
@@ -40,21 +41,8 @@ function syncStates(req: Request) {
     }
 }
 
-const parsePerson = (probablyPerson: any): Guest => new Guest(probablyPerson.id, probablyPerson.name);
-function send(res: Response, error: JsonError) {
-    res.status(error.status).json(error).end();
+function nationToJson(nation: Nation): any {
+
 }
 
-class JsonError {
-    readonly status: number;
-    readonly reason: string;
-
-    constructor(status: number, reason: string) {
-        this.status = status;
-        this.reason = reason;
-    }
-}
-const clientError = (error: Error) => new JsonError(400, error);
-
-
-module.exports = router;
+export const parsePerson = (probablyPerson: any): Guest => new Guest(probablyPerson.id, probablyPerson.name);

@@ -4,6 +4,9 @@ import favicon from 'serve-favicon';
 import * as sse from './infrastructure/sse';
 import * as path from "path";
 import * as bus from "./infrastructure/bus"
+import * as nation from "./nation/routes";
+import * as poll from "./poll/routes";
+import * as vote from "./vote/routes";
 
 const app = express();
 
@@ -18,6 +21,9 @@ app.use(express.json());
 
 app.get('/', (req: Request, res: Response) => { res.render('index'); });
 app.use("/sse", sse.init);
+app.use("/nation", nation.router);
+app.use("/poll", poll.router);
+app.use("/vote", vote.router);
 bus.init();
 
 

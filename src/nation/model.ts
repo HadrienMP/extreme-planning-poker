@@ -1,4 +1,5 @@
 import {Map} from "immutable";
+import {Maybe} from "typescript-monads";
 
 export type GuestId = string;
 export class Guest {
@@ -24,9 +25,8 @@ export class Citizen {
     alive = (): Citizen => new Citizen(this.id, this.name, new Date());
     isAlive = (): boolean => (new Date().getTime() - this.lastSeen.getTime()) < 2000;
 }
-
-export type Nation = Map<CitizenId, Citizen>
+export type Vote = { citizen: Citizen, ballot: Ballot }
+export type Ballot = string
+export type Entry = {citizen: Citizen, ballot: Maybe<Ballot>}
+export type Nation = Map<CitizenId, Entry>
 export type Error = string
-
-export const isCitizen = (citizen: Citizen, nation: Nation): boolean => nation.has(citizen.id)
-

@@ -1,17 +1,15 @@
-const express = require('express');
-const ballots = require('../ballots');
-const router = express.Router();
-const bus = require('../eventBus');
+import express from "express";
+import * as bus from "../infrastructure/bus";
+import * as nation from "../nation/store";
 
+export const router = express.Router({strict: true});
 router.post('/close', (req, res) => {
     bus.publishFront("pollClosed", {})
     res.sendStatus(200)
 });
 
 router.post('/start', (req, res) => {
-    ballots.reset()
+    nation.resetVotes();
     bus.publishFront("pollStarted", {})
     res.sendStatus(200)
 });
-
-module.exports = router;
