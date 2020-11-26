@@ -30,5 +30,5 @@ stateDecoder : Json.Decode.Decoder Messages.State
 stateDecoder =
     Json.Decode.map2
         Messages.State
-        (Json.Decode.field "nation" Nation.decoder)
-        (Json.Decode.field "ballots" Ballots.decoder)
+        (Json.Decode.field "voters" Nation.decoder)
+        (Json.Decode.field "votes" Ballots.decoder)

@@ -1,19 +1,23 @@
 import express, {Request, Response} from "express";
-import {Guest, Nation} from "./model";
+import {enlist, Guest, markAlive, nationFootprint, radiate, radiateInactive} from "./model";
 import * as bus from "../infrastructure/bus";
 import * as nation from "./store";
+import {getVoters, updateVoters} from "./store";
 import {clientError, send} from "../lib/ExpressUtils";
 
 setInterval(() => {
-    nation.radiateAuto().forEach(citizen => bus.publish("citizenLeft", citizen));
-}, 1000)
+    let {radiated, updated} = radiateInactive(nation.getVoters());
+    nation.updateVoters(updated);
+    radiated.forEach(citizen => bus.publish("citizenLeft", citizen));
+}, 1000);
 
 export const router = express.Router({strict: true});
 
 router.post('/enlist', (req: Request, res: Response) => {
     let person = parsePerson(req.body);
-    nation.enlist(person)
-        .onSuccess(citizen => bus.publishFront("enlisted", citizen))
+    enlist(person, nation.getVoters())
+        .onSuccess(ok => nation.updateVoters(ok[1]))
+        .onSuccess(ok => bus.publishFront("enlisted", ok[0]))
         .onSuccess(_ => res.json(nation.get()))
         .mapError(clientError)
         .onError(error => send(res, error));
@@ -21,7 +25,8 @@ router.post('/enlist', (req: Request, res: Response) => {
 
 router.post('/alive', (req: Request, res: Response) => {
     let person = parsePerson(req.body);
-    nation.alive(person.id)
+    markAlive(person.id, getVoters())
+        .onSuccess(updateVoters)
         .onSuccess(() => syncStates(req))
         .onSuccess(_ => res.status(200))
         .mapError(clientError)
@@ -30,19 +35,18 @@ router.post('/alive', (req: Request, res: Response) => {
 
 router.post('/leave', req => {
     let person = parsePerson(req.body);
-    nation.radiate(person.id);
-    // todo rename citizenLeft to radiated ?
-    bus.publishFront("citizenLeft", person)
+    radiate(person.id, nation.getVoters())
+        .onSuccess(updated => nation.updateVoters(updated))
+        // todo rename citizenLeft to radiated ?
+        .onSuccess(_ => bus.publishFront("citizenLeft", person));
+
 });
 
 function syncStates(req: Request) {
-    if (req.body.footprint !== nation.footprint()) {
+    if (req.body.footprint !== nationFootprint(nation.get())) {
         bus.publishFront("sync", nation.get());
     }
 }
 
-function nationToJson(nation: Nation): any {
-
-}
-
-export const parsePerson = (probablyPerson: any): Guest => new Guest(probablyPerson.id, probablyPerson.name);
+export const parsePerson = (probablyPerson: any): Guest =>
+    new Guest(probablyPerson.id, probablyPerson.name);
