@@ -6,7 +6,7 @@ import * as nation from "./infra/store";
 
 export const router = express.Router({strict: true});
 router.post('/close', (req, res) => {
-    nation.updateVotes(nation.getVotes())
+    nation.updateVotes(nation.getVotes().close())
     bus.publishFront("pollClosed", {})
     res.sendStatus(200)
 });

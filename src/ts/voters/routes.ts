@@ -1,10 +1,12 @@
 import express, {Request, Response} from "express";
-import {footprint} from "../nation-domain";
+import {footprint, Nation} from "../nation-domain";
 import * as bus from "../infra/bus";
 import * as nation from "../infra/store";
 import {getVoters, updateVoters} from "../infra/store";
 import {clientError, send} from "../lib/error-management";
 import {enlist, Guest, markAlive, radiate, radiateInactive} from "./domain";
+import * as Voters from "./domain";
+import * as Votes from "../votes/domain";
 
 setInterval(() => {
     let {radiated, updated} = radiateInactive(nation.getVoters());
@@ -19,7 +21,7 @@ router.post('/enlist', (req: Request, res: Response) => {
     enlist(person, nation.getVoters())
         .onSuccess(ok => nation.updateVoters(ok[1]))
         .onSuccess(ok => bus.publishFront("enlisted", ok[0]))
-        .onSuccess(_ => res.json(nation.get()))
+        .onSuccess(_ => res.json(toResponse(nation.get())))
         .mapError(clientError)
         .onError(error => send(res, error));
 });
@@ -36,7 +38,7 @@ router.post('/alive', (req: Request, res: Response) => {
 
 router.post('/leave', req => {
     let person = parsePerson(req.body);
-    radiate(person.id, nation.getVoters())
+    radiate(person.id, nation)
         .onSuccess(updated => nation.updateVoters(updated))
         // todo rename citizenLeft to radiated ?
         .onSuccess(_ => bus.publishFront("citizenLeft", person));
@@ -45,7 +47,14 @@ router.post('/leave', req => {
 
 function syncStates(req: Request) {
     if (req.body.footprint !== footprint(nation.get())) {
-        bus.publishFront("sync", nation.get());
+        bus.publishFront("sync", toResponse(nation.get()));
+    }
+}
+
+function toResponse(nation: Nation) {
+    return {
+        voters: nation.voters,
+        votes: nation.votes.value
     }
 }
 
