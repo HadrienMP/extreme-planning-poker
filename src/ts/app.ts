@@ -1,12 +1,12 @@
 import express, {Request, Response} from 'express';
 import logger from "morgan";
 import favicon from 'serve-favicon';
-import * as sse from './infrastructure/sse';
+import * as sse from './infra/sse';
 import * as path from "path";
-import * as bus from "./infrastructure/bus"
-import * as nation from "./nation/routes";
-import * as poll from "./poll/routes";
-import * as vote from "./vote/routes";
+import * as bus from "./infra/bus"
+import * as nation from "./voters/voters-api";
+import * as poll from "./poll-api";
+import * as vote from "./votes/votes-api";
 
 const app = express();
 

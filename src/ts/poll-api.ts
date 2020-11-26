@@ -1,7 +1,7 @@
 import express from "express";
-import * as bus from "../infrastructure/bus";
-import {updateVotes} from "../nation/store";
-import {emptyVotes} from "../nation/model";
+import * as bus from "./infra/bus";
+import {updateVotes} from "./infra/store";
+import {empty} from "./votes/votes-domain";
 
 export const router = express.Router({strict: true});
 router.post('/close', (req, res) => {
@@ -10,7 +10,7 @@ router.post('/close', (req, res) => {
 });
 
 router.post('/start', (req, res) => {
-    updateVotes(emptyVotes)
+    updateVotes(empty)
     bus.publishFront("pollStarted", {})
     res.sendStatus(200)
 });

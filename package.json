@@ -8,7 +8,7 @@
     "prod:build-front": "./elm-make.sh",
     "prod:build-back": "tsc",
     "prod:server": "node ./dist/app.js",
-    "dev:build-front": "elm-live ./elm/Main.elm --dir=./public/js --no-server -- --output=./public/js/main.js --debug",
+    "dev:build-front": "elm-live src/elm/Main.elm --dir=./public/js --no-server -- --output=./public/js/main.js --debug",
     "dev:build-back": "tsc --watch --preserveWatchOutput",
     "dev:server": "nodemon ./dist/app.js",
     "dev:all": "concurrently --kill-others \"npm run dev:build-front\" \"npm run dev:build-back\" \"npm run dev:server\""

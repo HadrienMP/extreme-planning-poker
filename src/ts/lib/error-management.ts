@@ -1,5 +1,4 @@
 import {Response} from "express";
-import {Error} from "../nation/model";
 
 export function send(res: Response, error: JsonError) {
     res.status(error.status).json(error).end();
@@ -14,4 +13,7 @@ export class JsonError {
         this.reason = reason;
     }
 }
+
+export type Error = string;
+
 export const clientError = (error: Error) => new JsonError(400, error);

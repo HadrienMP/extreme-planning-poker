@@ -1,7 +1,9 @@
-import {emptyNation, Nation, Voters, Votes} from "./model";
+import {empty, Nation} from "../nation-domain";
+import {Voters} from "../voters/voters-domain";
+import {Votes} from "../votes/votes-domain";
 
 
-let nation: Nation = emptyNation;
+let nation: Nation = empty;
 
 export const get = () => nation;
 export const getVoters = (): Voters => nation.voters;

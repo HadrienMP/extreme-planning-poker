@@ -1,9 +1,10 @@
 import express, {Request, Response} from "express";
-import {enlist, Guest, markAlive, nationFootprint, radiate, radiateInactive} from "./model";
-import * as bus from "../infrastructure/bus";
-import * as nation from "./store";
-import {getVoters, updateVoters} from "./store";
-import {clientError, send} from "../lib/ExpressUtils";
+import {footprint} from "../nation-domain";
+import * as bus from "../infra/bus";
+import * as nation from "../infra/store";
+import {getVoters, updateVoters} from "../infra/store";
+import {clientError, send} from "../lib/error-management";
+import {enlist, Guest, markAlive, radiate, radiateInactive} from "./voters-domain";
 
 setInterval(() => {
     let {radiated, updated} = radiateInactive(nation.getVoters());
@@ -24,11 +25,11 @@ router.post('/enlist', (req: Request, res: Response) => {
 });
 
 router.post('/alive', (req: Request, res: Response) => {
-    let person = parsePerson(req.body);
+    let person = parsePerson(req.body.citizen);
     markAlive(person.id, getVoters())
         .onSuccess(updateVoters)
         .onSuccess(() => syncStates(req))
-        .onSuccess(_ => res.status(200))
+        .onSuccess(_ => res.status(200).end())
         .mapError(clientError)
         .onError(error => send(res, error));
 });
@@ -43,7 +44,7 @@ router.post('/leave', req => {
 });
 
 function syncStates(req: Request) {
-    if (req.body.footprint !== nationFootprint(nation.get())) {
+    if (req.body.footprint !== footprint(nation.get())) {
         bus.publishFront("sync", nation.get());
     }
 }

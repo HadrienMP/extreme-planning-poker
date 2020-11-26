@@ -1,9 +1,9 @@
 import {Request, Response, Router} from "express";
-import * as bus from "../infrastructure/bus";
-import * as nation from "../nation/store";
-import {parsePerson} from "../nation/routes";
-import {cancelVote, vote, Vote} from "../nation/model";
-import {clientError, send} from "../lib/ExpressUtils";
+import * as bus from "../infra/bus";
+import * as nation from "../infra/store";
+import {parsePerson} from "../voters/voters-api";
+import {clientError, send} from "../lib/error-management";
+import {cancelVote, vote, Vote} from "./votes-domain";
 
 export const router = Router({strict: true});
 
