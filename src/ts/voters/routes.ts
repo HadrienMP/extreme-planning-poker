@@ -4,7 +4,7 @@ import * as bus from "../infra/bus";
 import * as nation from "../infra/store";
 import {getVoters, updateVoters} from "../infra/store";
 import {clientError, send} from "../lib/error-management";
-import {enlist, Guest, markAlive, radiate, radiateInactive} from "./voters-domain";
+import {enlist, Guest, markAlive, radiate, radiateInactive} from "./domain";
 
 setInterval(() => {
     let {radiated, updated} = radiateInactive(nation.getVoters());

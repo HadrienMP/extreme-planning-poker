@@ -4,9 +4,9 @@ import favicon from 'serve-favicon';
 import * as sse from './infra/sse';
 import * as path from "path";
 import * as bus from "./infra/bus"
-import * as nation from "./voters/voters-api";
+import * as nation from "./voters/routes";
 import * as poll from "./poll-api";
-import * as vote from "./votes/votes-api";
+import * as vote from "./votes/routes";
 
 const app = express();
 

@@ -1,7 +1,7 @@
 import {Nation} from "../nation-domain";
 import {Map} from "immutable";
 import {Md5} from "ts-md5";
-import {Citizen, CitizenId, findCitizenById} from "../voters/voters-domain";
+import {Citizen, CitizenId, findCitizenById} from "../voters/domain";
 
 export type Ballot = string
 export type Vote = { citizen: CitizenId, ballot: Ballot }
