@@ -55,7 +55,6 @@ subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.batch
     [ messageReceiver handleEvent
     , Time.every 1000 SendHeartbeat
-    , Time.every 1000 (\now -> Error.Clean now |> ErrorMsg)
     ]
 
 handleEvent : (EventKind, Json.Decode.Value) -> Msg
