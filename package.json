@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "npm run prod:build-back && npm run prod:build-front",
+    "build": "npm run prod:build-back",
     "start": "npm run prod:server",
     "prod:build-front": "./elm-make.sh",
     "prod:build-back": "tsc",
