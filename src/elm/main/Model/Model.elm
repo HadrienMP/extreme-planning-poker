@@ -1,12 +1,12 @@
 module Model.Model exposing (..)
 
+import MD5
 import Messages exposing (State)
 import Model.Ballots as Ballots exposing (Ballot, Ballots)
 import Model.Deck exposing (Deck)
 import Model.Decks as Decks
 import Error exposing (Errors)
 import Model.Nation as Nation exposing (Citizen, CitizenId, Nation)
-import SHA1
 
 type alias Context =
     { deck: Deck
@@ -40,15 +40,11 @@ sync state context =
     , ballots = state.ballots
     }
 
-footprint : Context -> SHA1.Digest
-footprint context =
-    ((Nation.footprint context.nation), (Ballots.footprint context.ballots))
-    |> Tuple.mapBoth SHA1.toHex SHA1.toHex
-    |> (\t -> (Tuple.first t) ++ (Tuple.second t))
-    |> SHA1.fromString
+footprint : Context -> String
+footprint context = (Nation.footprint context.nation) ++ (Ballots.footprint context.ballots)
 
 openFrom : Citizen -> State -> Model
-openFrom citizen state = Model [] (Open (OpenModel (contextFrom citizen state) Nothing))
+openFrom citizen state = Model Error.empty (Open (OpenModel (contextFrom citizen state) Nothing))
 
 contextFrom : Citizen -> State -> Context
 contextFrom citizen state =

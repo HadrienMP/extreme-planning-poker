@@ -2,6 +2,7 @@ module Model.Ballots exposing (..)
 
 import Json.Decode as Decode
 import Json.Encode as Encode
+import MD5
 import Model.Deck as Deck exposing (..)
 import Dict exposing (Dict)
 import Html exposing (..)
@@ -49,11 +50,11 @@ decoder : Decode.Decoder Ballots
 decoder = Decode.dict Decode.string
 
 ballotDecoder : Decode.Decoder Ballot
-ballotDecoder = Decode.map2 Ballot (Decode.field "citizen" Decode.string) (Decode.field "cardCode" Decode.string)
+ballotDecoder = Decode.map2 Ballot (Decode.field "citizen" Decode.string) (Decode.field "ballot" Decode.string)
 
-footprint : Ballots -> SHA1.Digest
+footprint : Ballots -> String
 footprint ballots =
     Dict.toList ballots
+    |> List.sortBy Tuple.first
     |> List.map (\ballot -> (Tuple.first ballot) ++ (Tuple.second ballot))
-    |> List.foldl (++) ""
-    |> SHA1.fromString
+    |> List.foldr (++) ""

@@ -32,7 +32,7 @@ port messageReceiver : ((EventKind, Json.Decode.Value) -> msg) -> Sub msg
 -- MODEL
 
 init : () -> (Model, Cmd Msg)
-init _ = (Guest "" "" |> Model [], Random.generate GeneratedId Tools.uuid)
+init _ = (Guest "" "" |> Model Error.empty, Random.generate GeneratedId Tools.uuid)
 
 -- UPDATE
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -54,8 +54,6 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.batch
     [ messageReceiver handleEvent
-    , Time.every 1000 SendHeartbeat
-    , Time.every 1000 (\now -> Error.Clean now |> ErrorMsg)
     ]
 
 handleEvent : (EventKind, Json.Decode.Value) -> Msg
@@ -73,6 +71,8 @@ dispatch event =
         "pollStarted" -> Ok PollStarted
         "citizenLeft" -> Sse.decodeData Nation.citizenDecoder event |> Result.map CitizenLeft
         "sync" -> Sse.decodeData Common.stateDecoder event |> Result.map Sync
+        "sseClosed" -> Ok <| KickedOut "Closed server-sent events connection"
+        "areYouAlive" -> Ok SendHeartbeat
         _ -> Err ("Unknown event type: " ++ event.kind)
 
 -- VIEW

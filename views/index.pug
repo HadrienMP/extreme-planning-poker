@@ -8,7 +8,8 @@ block content
     script.
         const app = Elm.Main.init({node: document.getElementById('myapp')})
         const evtSource = new EventSource("/sse");
-        evtSource.onmessage = function(raw) {
+        evtSource.onmessage = raw => {
             let event = JSON.parse(raw.data);
             app.ports.messageReceiver.send([event.name, event.data]);
         };
+        evtSource.onerror = () => app.ports.messageReceiver.send(["sseClosed", {}]);

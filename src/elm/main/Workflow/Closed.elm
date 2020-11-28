@@ -1,5 +1,5 @@
 module Workflow.Closed exposing (..)
-import Common
+import Common exposing (kickedOut)
 import Http
 import Model.Ballots as Ballots exposing (Ballots)
 import Model.Deck as Deck exposing (Card, Deck)
@@ -21,28 +21,25 @@ update msg model =
     case model.workflow of
         Closed context ->
             case msg of
-                SendHeartbeat _ -> (model, Common.sendHeartbeat context)
+                SendHeartbeat -> (model, Common.sendHeartbeat context)
+
+                KickedOut reason -> context.me |> kickedOut reason |> Tuple.mapFirst (Model model.errors)
 
                 HeartbeatResp (Err e) ->
                     case e of
                         Http.BadStatus _ ->
-                            ( context.me
-                                |> (\citizen -> Model.Guest citizen.id citizen.name)
-                                |> Model model.errors
-                            , "You were kicked out by the server (probably a restart)"
-                                |> Error.addError
-                                |> Cmd.map ErrorMsg
-                            )
+                            context.me |> kickedOut "probably a server restart" |> Tuple.mapFirst (Model model.errors)
                         _ ->
                             ( model
                             , Tools.httpErrorToString e
-                                |> Error.addError
+                                |> Error.timeError
                                 |> Cmd.map ErrorMsg
                             )
 
                 Sync sync ->
                     ( { model | workflow = (Closed (Model.sync sync context)) }
-                    , Cmd.none)
+                    , Error.timeError "Out of sync" |> Cmd.map ErrorMsg
+                    )
                 CitizenLeft citizen ->
                     if citizen == context.me then
                         ( { model | workflow = Guest "" "" }

@@ -162,7 +162,7 @@ p {
 #errors li .close {
   position: absolute;
   right: 15px;
-  top: 13px;
+  top: 12px;
   vertical-align: baseline;
   visibility: hidden;
 }
@@ -173,6 +173,22 @@ p {
 
 #errors li:first-child {
   margin-top: 0;
+}
+
+#errors li .count {
+  display: inline-block;
+  background: #970000;
+  color: white;
+  margin-right: 10px;
+  border-radius: 100%;
+  padding: 4px;
+  text-align: center;
+  width: 27px;
+  height: 27px;
+  box-sizing: border-box;
+  position: absolute;
+  top: -15px;
+  right: -21px;
 }
 
 #enlist-form input {
