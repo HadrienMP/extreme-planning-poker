@@ -1,4 +1,4 @@
-import {List, Map} from "immutable";
+import {Map} from "immutable";
 import {fail, Result, success} from "../lib/Result";
 import {Md5} from "ts-md5";
 import {Error} from "../lib/error-management";
@@ -42,15 +42,6 @@ export function markAlive(id: string, voters: Map<CitizenId, Citizen>) {
     return findCitizenById(id, voters).map(citizen => voters.set(citizen.id, citizen.alive()));
 }
 
-// Radiate
-export function radiateInactive(voters: Voters): { radiated: List<Citizen>, updated: Voters } {
-    let radiated = voters.filterNot((citizen: Citizen) => citizen.isAlive()).toList();
-    let updated = voters.removeAll(radiated.map(citizen => citizen.id));
-    return {radiated, updated};
-}
-export const radiate = (id: string, voters: Voters) =>
-    findCitizenById(id, voters).map(citizen => voters.remove(citizen.id));
-
 function jojo(id: CitizenId, voters: Map<CitizenId, Citizen>): Result<Citizen, Error> {
     console.log(id, JSON.stringify(voters));
     return fail("Not a citizen");
@@ -63,4 +54,7 @@ export function findCitizenById(id: CitizenId, voters: Map<CitizenId, Citizen>):
         : success(citizen);
 }
 export const footprint = (voters: Voters): string =>
-    Md5.hashStr(voters.valueSeq().map(citizen => citizen.id + citizen.name).join()).toString();
+    voters.valueSeq()
+        .sortBy(value => value.id)
+        .map(citizen => citizen.id + citizen.name)
+        .join("");

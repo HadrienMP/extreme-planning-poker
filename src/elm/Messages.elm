@@ -16,6 +16,7 @@ type Msg
     | SendHeartbeat Time.Posix
     | HeartbeatResp (Result Http.Error ())
     | Sync State
+    | KickedOut String
 
     | ErrorMsg Error.Msg
 

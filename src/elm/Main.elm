@@ -73,6 +73,7 @@ dispatch event =
         "pollStarted" -> Ok PollStarted
         "citizenLeft" -> Sse.decodeData Nation.citizenDecoder event |> Result.map CitizenLeft
         "sync" -> Sse.decodeData Common.stateDecoder event |> Result.map Sync
+        "closedSse" -> Ok <| KickedOut "Closed server-sent events connection"
         _ -> Err ("Unknown event type: " ++ event.kind)
 
 -- VIEW

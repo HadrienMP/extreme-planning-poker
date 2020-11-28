@@ -1,5 +1,5 @@
 import {Nation} from "../nation-domain";
-import {Map} from "immutable";
+import {List, Map} from "immutable";
 import {Md5} from "ts-md5";
 import {CitizenId, findCitizenById} from "../voters/domain";
 import {fail, Result} from "../lib/Result";
@@ -23,12 +23,20 @@ export class Votes {
     }
     open = () => new Votes(VotesTypes.Open, this.value);
     close = () => new Votes(VotesTypes.Closed, this.value);
+
+    remove(id: CitizenId) {
+        return this.update(v => v.remove(id));
+    }
+
+    removeAll(toRadiate: List<CitizenId>) {
+        return this.update(v => v.removeAll(toRadiate));
+    }
 }
 export const empty: Votes = new Votes(VotesTypes.Open, Map({}));
 export const footprint = (votes: Votes): string =>
-    Md5.hashStr(
-        votes.value.reduce((reduction: string, value: Ballot, key: CitizenId) => reduction + key + value, "")
-    ).toString();
+    votes.value.toSeq()
+        .sortBy((value, key) => key)
+        .reduce((reduction: string, value: Ballot, key: CitizenId) => reduction + key + value, "");
 
 export function cancelVote(id: string, nation: Nation): Result<Votes, Error> {
     if (nation.votes.type == VotesTypes.Closed) return fail("The poll is closed")

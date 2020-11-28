@@ -1,16 +1,14 @@
 import express, {Request, Response} from "express";
-import {footprint, Nation} from "../nation-domain";
+import {footprint, Nation, radiate, radiateInactive} from "../nation-domain";
 import * as bus from "../infra/bus";
 import * as nation from "../infra/store";
 import {getVoters, updateVoters} from "../infra/store";
 import {clientError, send} from "../lib/error-management";
-import {enlist, Guest, markAlive, radiate, radiateInactive} from "./domain";
-import * as Voters from "./domain";
-import * as Votes from "../votes/domain";
+import {enlist, Guest, markAlive} from "./domain";
 
 setInterval(() => {
-    let {radiated, updated} = radiateInactive(nation.getVoters());
-    nation.updateVoters(updated);
+    let {radiated, updated} = radiateInactive(nation.get());
+    nation.update(updated);
     radiated.forEach(citizen => bus.publish("citizenLeft", citizen));
 }, 1000);
 
@@ -38,14 +36,15 @@ router.post('/alive', (req: Request, res: Response) => {
 
 router.post('/leave', req => {
     let person = parsePerson(req.body);
-    radiate(person.id, nation)
-        .onSuccess(updated => nation.updateVoters(updated))
+    radiate(person.id, nation.get())
+        .onSuccess(updated => nation.update(updated))
         // todo rename citizenLeft to radiated ?
         .onSuccess(_ => bus.publishFront("citizenLeft", person));
 
 });
 
 function syncStates(req: Request) {
+    console.log(`front ${req.body.footprint}\n back ${footprint(nation.get())}`);
     if (req.body.footprint !== footprint(nation.get())) {
         bus.publishFront("sync", toResponse(nation.get()));
     }

@@ -1,11 +1,11 @@
 module Workflow.Open exposing (..)
 
-import Common
+import Common exposing (kickedOut)
 import Http
 import Model.Ballots as Ballots exposing (Ballot, hasVoted, Ballots)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(..))
-import Error as Error
+import Error as Error exposing (addError)
 import Model.Model as Model exposing (Model)
 import Model.Nation as Nation exposing (..)
 import Model.Deck exposing (Card, Deck, cardHtml2)
@@ -27,15 +27,12 @@ update msg open =
         SendHeartbeat _ ->
             ( Model.Open open, Common.sendHeartbeat open.context )
 
+        KickedOut reason -> open.context.me |> kickedOut reason
+
         HeartbeatResp (Err e) ->
             case e of
                 Http.BadStatus _ ->
-                    ( open.context.me
-                        |> (\citizen -> Model.Guest citizen.id citizen.name)
-                    , "You were kicked out by the server (probably a restart)"
-                        |> Error.addError
-                        |> Cmd.map ErrorMsg
-                    )
+                    open.context.me |> kickedOut "probably a server restart"
                 _ ->
                     ( Model.Open open
                     , Tools.httpErrorToString e
@@ -44,9 +41,9 @@ update msg open =
                     )
 
         Sync state ->
-            ( { open | context = Model.sync state open.context }
-                |> Model.Open
-            , Cmd.none )
+            ( { open | context = Model.sync state open.context } |> Model.Open
+            , Error.addError "Out of sync" |> Cmd.map ErrorMsg
+            )
 
         CitizenLeft citizen ->
             if citizen == open.context.me then
