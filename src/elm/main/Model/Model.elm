@@ -59,7 +59,7 @@ contextFrom citizen state =
 enlist : Context -> Citizen -> Context
 enlist context citizen = { context | nation = Nation.enlist citizen context.nation }
 
-removeCitizen : Context -> Citizen -> Context
+removeCitizen : Context -> CitizenId -> Context
 removeCitizen context citizen = { context | nation = Nation.remove citizen context.nation }
 
 vote : Context -> Ballot -> Context

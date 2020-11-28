@@ -69,7 +69,7 @@ dispatch event =
         "voteCancelled" -> Sse.decodeData Nation.citizenDecoder event |> Result.map VoteCancelled
         "pollClosed" -> Ok PollClosed
         "pollStarted" -> Ok PollStarted
-        "citizenLeft" -> Sse.decodeData Nation.citizenDecoder event |> Result.map CitizenLeft
+        "citizenLeft" -> Sse.decodeData Json.Decode.string event |> Result.map CitizenLeft
         "sync" -> Sse.decodeData Common.stateDecoder event |> Result.map Sync
         "sseClosed" -> Ok <| KickedOut "Closed server-sent events connection"
         "areYouAlive" -> Ok SendHeartbeat

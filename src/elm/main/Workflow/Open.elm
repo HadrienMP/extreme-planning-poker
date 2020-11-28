@@ -46,7 +46,7 @@ update msg open =
             )
 
         CitizenLeft citizen ->
-            if citizen == open.context.me then
+            if citizen == open.context.me.id then
                 ( Model.Guest "" ""
                 , Cmd.none )
             else

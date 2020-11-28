@@ -17,8 +17,8 @@ type alias Nation = Dict CitizenId Citizen
 enlist : Citizen -> Nation -> Nation
 enlist citizen nation = Dict.insert citizen.id citizen nation
 
-remove : Citizen -> Nation -> Nation
-remove citizen nation = Dict.remove citizen.id nation
+remove : CitizenId -> Nation -> Nation
+remove citizen nation = Dict.remove citizen nation
 
 citizens : Nation -> List Citizen
 citizens nation = Dict.values nation

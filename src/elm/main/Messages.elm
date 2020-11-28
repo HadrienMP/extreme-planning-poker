@@ -3,7 +3,7 @@ module Messages exposing (..)
 import Http
 import Model.Ballots exposing (Ballot, Ballots)
 import Error as Error
-import Model.Nation exposing (Citizen, Nation)
+import Model.Nation exposing (Citizen, CitizenId, Nation)
 import Time exposing (Posix)
 
 type alias State =
@@ -37,4 +37,4 @@ type Msg
     | Start
     | PollStarted
 
-    | CitizenLeft Citizen
+    | CitizenLeft CitizenId

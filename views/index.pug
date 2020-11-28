@@ -7,9 +7,11 @@ block content
     div#myapp
     script.
         const app = Elm.Main.init({node: document.getElementById('myapp')})
-        const evtSource = new EventSource("/sse");
-        evtSource.onmessage = raw => {
-            let event = JSON.parse(raw.data);
-            app.ports.messageReceiver.send([event.name, event.data]);
-        };
-        evtSource.onerror = () => app.ports.messageReceiver.send(["sseClosed", {}]);
+        app.ports.connectSse.subscribe(id => {
+            const evtSource = new EventSource(`/sse?id=${id}`);
+            evtSource.onerror = () => location.reload();
+            evtSource.onmessage = raw => {
+                let event = JSON.parse(raw.data);
+                app.ports.messageReceiver.send([event.name, event.data]);
+            };
+        });

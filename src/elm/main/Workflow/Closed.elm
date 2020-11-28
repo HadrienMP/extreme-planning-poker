@@ -41,7 +41,7 @@ update msg model =
                     , Error.timeError "Out of sync" |> Cmd.map ErrorMsg
                     )
                 CitizenLeft citizen ->
-                    if citizen == context.me then
+                    if citizen == context.me.id then
                         ( { model | workflow = Guest "" "" }
                         , Cmd.none )
                     else

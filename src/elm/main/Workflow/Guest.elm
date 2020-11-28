@@ -1,4 +1,4 @@
-module Workflow.Guest exposing (..)
+port module Workflow.Guest exposing (..)
 import Common
 import Messages exposing (Msg(..))
 import Http exposing (Error(..))
@@ -7,6 +7,7 @@ import Model.Model as Model exposing (Model, Workflow(..))
 import Model.Nation as Nation exposing (Citizen)
 import Tools
 
+port connectSse : String -> Cmd msg
 
 -- ###################################################
 -- UPDATE
@@ -22,7 +23,7 @@ update msg model =
                     , serverEnlist (Citizen id guest))
                 GeneratedId generated ->
                     ( Guest generated guest |> Model model.errors
-                    , Cmd.none)
+                    , connectSse generated)
                 Enlisted response ->
                     case response of
                         Err (BadStatus _) ->

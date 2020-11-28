@@ -22,20 +22,18 @@ export function init(req: Request, res: Response) {
 
     setInterval(() => res.write("event: ping\ndata: stay alive\n\n"), 3000);
 
-    const newClient = new Client(Date.now().toString(), res);
+    const newClient = new Client(req.query.id as string, res);
     clients.push(newClient);
 
     req.on('close', () => {
-        console.log(`${newClient.id} Connection closed`);
         clients = clients.filter(c => c.id !== newClient.id);
-        bus.publishFront("areYouAlive", {});
-        setTimeout(_ => {
-            bus.publish("radiate", {});
-        }, 1000)
+        bus.publishFront("citizenLeft", newClient.id);
     });
 }
 
 export function send(data: any, event: string = "") {
     let eventSse = event ? `event: ${event}\n` : ``;
-    clients.forEach(client => client.response.write(`${eventSse}data: ${JSON.stringify(data)}\n\n`));
+    let chunk = `${eventSse}data: ${JSON.stringify(data)}\n\n`;
+    console.log(`SSE -> ${chunk.slice(0, -2)}`);
+    clients.forEach(client => client.response.write(chunk));
 }
