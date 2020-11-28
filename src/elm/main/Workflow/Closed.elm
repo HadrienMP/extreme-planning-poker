@@ -21,7 +21,7 @@ update msg model =
     case model.workflow of
         Closed context ->
             case msg of
-                SendHeartbeat _ -> (model, Common.sendHeartbeat context)
+                SendHeartbeat -> (model, Common.sendHeartbeat context)
 
                 KickedOut reason -> context.me |> kickedOut reason |> Tuple.mapFirst (Model model.errors)
 

@@ -54,7 +54,6 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.batch
     [ messageReceiver handleEvent
-    , Time.every 1000 SendHeartbeat
     ]
 
 handleEvent : (EventKind, Json.Decode.Value) -> Msg
@@ -72,7 +71,8 @@ dispatch event =
         "pollStarted" -> Ok PollStarted
         "citizenLeft" -> Sse.decodeData Nation.citizenDecoder event |> Result.map CitizenLeft
         "sync" -> Sse.decodeData Common.stateDecoder event |> Result.map Sync
-        "closedSse" -> Ok <| KickedOut "Closed server-sent events connection"
+        "sseClosed" -> Ok <| KickedOut "Closed server-sent events connection"
+        "areYouAlive" -> Ok SendHeartbeat
         _ -> Err ("Unknown event type: " ++ event.kind)
 
 -- VIEW

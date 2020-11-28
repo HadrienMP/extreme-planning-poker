@@ -6,11 +6,11 @@ import {getVoters, updateVoters} from "../infra/store";
 import {clientError, send} from "../lib/error-management";
 import {enlist, Guest, markAlive} from "./domain";
 
-setInterval(() => {
+bus.on("radiate", _ => {
     let {radiated, updated} = radiateInactive(nation.get());
     nation.update(updated);
-    radiated.forEach(citizen => bus.publish("citizenLeft", citizen));
-}, 1000);
+    radiated.forEach(citizen => bus.publishFront("citizenLeft", citizen));
+});
 
 export const router = express.Router({strict: true});
 

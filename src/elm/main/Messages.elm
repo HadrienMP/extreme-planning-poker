@@ -13,7 +13,7 @@ type alias State =
 
 type Msg
     = CmdResp (Result Http.Error ())
-    | SendHeartbeat Time.Posix
+    | SendHeartbeat
     | HeartbeatResp (Result Http.Error ())
     | Sync State
     | KickedOut String

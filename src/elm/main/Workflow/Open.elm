@@ -24,7 +24,7 @@ import Tools
 update : Msg -> Model.OpenModel -> (Model.Workflow, Cmd Msg)
 update msg open =
     case msg of
-        SendHeartbeat _ ->
+        SendHeartbeat ->
             ( Model.Open open, Common.sendHeartbeat open.context )
 
         KickedOut reason -> open.context.me |> kickedOut reason

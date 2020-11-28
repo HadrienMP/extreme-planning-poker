@@ -1,4 +1,5 @@
 import {Request, Response} from "express";
+import * as bus from "./bus";
 
 let clients: Client[] = [];
 
@@ -27,6 +28,10 @@ export function init(req: Request, res: Response) {
     req.on('close', () => {
         console.log(`${newClient.id} Connection closed`);
         clients = clients.filter(c => c.id !== newClient.id);
+        bus.publishFront("areYouAlive", {});
+        setTimeout(_ => {
+            bus.publish("radiate", {});
+        }, 1000)
     });
 }
 

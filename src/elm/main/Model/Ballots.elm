@@ -57,4 +57,4 @@ footprint ballots =
     Dict.toList ballots
     |> List.sortBy Tuple.first
     |> List.map (\ballot -> (Tuple.first ballot) ++ (Tuple.second ballot))
-    |> List.foldl (++) ""
+    |> List.foldr (++) ""
