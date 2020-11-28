@@ -20,6 +20,8 @@ type Msg
     | Delete Error
     | Clean Posix
 
+empty = Dict.empty
+
 -- UPDATE
 
 update : Msg -> Errors -> (Errors, Cmd Msg)

@@ -3,7 +3,7 @@ import {List, Map} from "immutable";
 import {Md5} from "ts-md5";
 import {CitizenId, findCitizenById} from "../voters/domain";
 import {fail, Result} from "../lib/Result";
-import {Error} from "../lib/error-management";
+import {ErrorMsg} from "../lib/error-management";
 
 export type Ballot = string
 export type Vote = { citizen: CitizenId, ballot: Ballot }
@@ -38,13 +38,13 @@ export const footprint = (votes: Votes): string =>
         .sortBy((value, key) => key)
         .reduce((reduction: string, value: Ballot, key: CitizenId) => reduction + key + value, "");
 
-export function cancelVote(id: string, nation: Nation): Result<Votes, Error> {
+export function cancelVote(id: string, nation: Nation): Result<Votes, ErrorMsg> {
     if (nation.votes.type == VotesTypes.Closed) return fail("The poll is closed")
     return findCitizenById(id, nation.voters)
         .map(citizen => nation.votes.update(value => value.remove(citizen.id)));
 }
 
-export function vote(vote: Vote, nation: Nation): Result<Votes, Error> {
+export function vote(vote: Vote, nation: Nation): Result<Votes, ErrorMsg> {
     if (nation.votes.type == VotesTypes.Closed) return fail("The poll is closed")
     return findCitizenById(vote.citizen, nation.voters)
         .map(citizen => nation.votes.update(value => value.set(citizen.id, vote.ballot)));

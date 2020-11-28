@@ -1,7 +1,6 @@
-import {Map} from "immutable";
+import {Map, Seq} from "immutable";
 import {fail, Result, success} from "../lib/Result";
-import {Md5} from "ts-md5";
-import {Error} from "../lib/error-management";
+import {ErrorMsg} from "../lib/error-management";
 
 export type Voters = Map<CitizenId, Citizen>
 export type CitizenId = string;
@@ -32,10 +31,16 @@ export class Citizen {
 
 export const empty: Voters = Map({});
 
-export const enlist = (guest: Guest, voters: Voters): Result<[Citizen, Voters], Error> => {
-    if (guest.id in voters) return fail("Already enlisted");
-    if (guest.name in voters.values()) return fail("Name is already taken");
-    let citizen = new Citizen(guest.id, guest.name, new Date());
+export const enlist = (guest: Guest, voters: Voters, now: Date = new Date())
+    : Result<[Citizen, Voters], ErrorMsg> => {
+
+    if (guest.id in voters)
+        return fail("Already enlisted");
+
+    if (voters.find(value => value.name === guest.name))
+        return fail("Name is already taken");
+
+    let citizen = new Citizen(guest.id, guest.name, now);
     return success([citizen, voters.set(citizen.id, citizen)]);
 };
 
@@ -43,12 +48,12 @@ export function markAlive(id: string, voters: Map<CitizenId, Citizen>) {
     return findCitizenById(id, voters).map(citizen => voters.set(citizen.id, citizen.alive()));
 }
 
-function jojo(id: CitizenId, voters: Map<CitizenId, Citizen>): Result<Citizen, Error> {
+function jojo(id: CitizenId, voters: Map<CitizenId, Citizen>): Result<Citizen, ErrorMsg> {
     console.log(id, JSON.stringify(voters));
     return fail("Not a citizen");
 }
 
-export function findCitizenById(id: CitizenId, voters: Map<CitizenId, Citizen>): Result<Citizen, Error> {
+export function findCitizenById(id: CitizenId, voters: Map<CitizenId, Citizen>): Result<Citizen, ErrorMsg> {
     const citizen = voters.get(id)
     return citizen === undefined
         ? jojo(id, voters)

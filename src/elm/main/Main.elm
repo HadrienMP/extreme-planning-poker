@@ -32,7 +32,7 @@ port messageReceiver : ((EventKind, Json.Decode.Value) -> msg) -> Sub msg
 -- MODEL
 
 init : () -> (Model, Cmd Msg)
-init _ = (Guest "" "" |> Model [], Random.generate GeneratedId Tools.uuid)
+init _ = (Guest "" "" |> Model Error.empty, Random.generate GeneratedId Tools.uuid)
 
 -- UPDATE
 update : Msg -> Model -> (Model, Cmd Msg)

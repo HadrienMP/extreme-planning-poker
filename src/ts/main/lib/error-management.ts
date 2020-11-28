@@ -14,6 +14,6 @@ export class JsonError {
     }
 }
 
-export type Error = string;
+export type ErrorMsg = string;
 
-export const clientError = (error: Error) => new JsonError(400, error);
+export const clientError = (error: ErrorMsg) => new JsonError(400, error);

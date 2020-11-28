@@ -44,8 +44,8 @@ router.post('/leave', req => {
 });
 
 function syncStates(req: Request) {
-    console.log(`front ${req.body.footprint}\n back ${footprint(nation.get())}`);
     if (req.body.footprint !== footprint(nation.get())) {
+        console.log(`front ${req.body.footprint}\n back ${footprint(nation.get())}`);
         bus.publishFront("sync", toResponse(nation.get()));
     }
 }

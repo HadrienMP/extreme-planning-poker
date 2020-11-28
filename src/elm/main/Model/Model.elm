@@ -44,7 +44,7 @@ footprint : Context -> String
 footprint context = (Nation.footprint context.nation) ++ (Ballots.footprint context.ballots)
 
 openFrom : Citizen -> State -> Model
-openFrom citizen state = Model [] (Open (OpenModel (contextFrom citizen state) Nothing))
+openFrom citizen state = Model Error.empty (Open (OpenModel (contextFrom citizen state) Nothing))
 
 contextFrom : Citizen -> State -> Context
 contextFrom citizen state =
