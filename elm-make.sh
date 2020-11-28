@@ -1,1 +1,1 @@
-elm make ./src/elm/Main.elm --output=./public/js/main.js
+elm make ./src/elm/main/Main.elm --output=./public/js/main.js

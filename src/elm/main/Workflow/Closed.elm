@@ -32,13 +32,13 @@ update msg model =
                         _ ->
                             ( model
                             , Tools.httpErrorToString e
-                                |> Error.addError
+                                |> Error.timeError
                                 |> Cmd.map ErrorMsg
                             )
 
                 Sync sync ->
                     ( { model | workflow = (Closed (Model.sync sync context)) }
-                    , Error.addError "Out of sync" |> Cmd.map ErrorMsg
+                    , Error.timeError "Out of sync" |> Cmd.map ErrorMsg
                     )
                 CitizenLeft citizen ->
                     if citizen == context.me then

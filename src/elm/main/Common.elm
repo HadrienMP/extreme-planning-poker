@@ -13,7 +13,7 @@ import Model.Nation as Nation exposing (Citizen)
 kickedOut : String -> Citizen -> (Workflow, Cmd Msg)
 kickedOut reason citizen = ( Model.Guest citizen.id citizen.name
                     , "You were kicked out by the server (" ++ reason ++ ")"
-                        |> Error.addError
+                        |> Error.timeError
                         |> Cmd.map ErrorMsg
                     )
 

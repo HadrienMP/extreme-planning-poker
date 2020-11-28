@@ -5,7 +5,7 @@ import Http
 import Model.Ballots as Ballots exposing (Ballot, hasVoted, Ballots)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(..))
-import Error as Error exposing (addError)
+import Error as Error exposing (timeError)
 import Model.Model as Model exposing (Model)
 import Model.Nation as Nation exposing (..)
 import Model.Deck exposing (Card, Deck, cardHtml2)
@@ -36,13 +36,13 @@ update msg open =
                 _ ->
                     ( Model.Open open
                     , Tools.httpErrorToString e
-                        |> Error.addError
+                        |> Error.timeError
                         |> Cmd.map ErrorMsg
                     )
 
         Sync state ->
             ( { open | context = Model.sync state open.context } |> Model.Open
-            , Error.addError "Out of sync" |> Cmd.map ErrorMsg
+            , Error.timeError "Out of sync" |> Cmd.map ErrorMsg
             )
 
         CitizenLeft citizen ->

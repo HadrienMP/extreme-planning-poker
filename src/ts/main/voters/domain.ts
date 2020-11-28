@@ -31,6 +31,7 @@ export class Citizen {
 }
 
 export const empty: Voters = Map({});
+
 export const enlist = (guest: Guest, voters: Voters): Result<[Citizen, Voters], Error> => {
     if (guest.id in voters) return fail("Already enlisted");
     if (guest.name in voters.values()) return fail("Name is already taken");
