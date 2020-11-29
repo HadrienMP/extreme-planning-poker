@@ -20,7 +20,7 @@ export function init(req: Request, res: Response) {
     };
     res.writeHead(200, headers);
 
-    setInterval(() => res.write("event: ping\ndata: stay alive\n\n"), 3000);
+    setInterval(() => res.write("event: ping\ndata: stay alive\n\n"), 10000);
 
     const newClient = new Client(req.query.id as string, res);
     clients.push(newClient);
