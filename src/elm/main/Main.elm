@@ -47,7 +47,7 @@ update msg model =
             case model.workflow of
                 Guest _ _  -> Guest.update msg model
                 Model.Open open -> Open.update msg open |> Tuple.mapFirst (Model model.errors)
-                Closed _ -> Closed.update msg model
+                Closed closed -> Closed.update msg closed |> Tuple.mapFirst (Model model.errors)
 
 
 -- SUBSCRIPTIONS

@@ -7,7 +7,7 @@ import Messages exposing (Msg(..))
 import Html exposing (..)
 import Html.Attributes exposing (id)
 import Error as Error
-import Model.Model as Model exposing (Model, Workflow(..))
+import Model.Model as Model exposing (Context, Model, Workflow(..))
 import Model.Nation as Nation exposing (Citizen, Nation, citizenHtml)
 import OtherHtml exposing (startButton)
 import Tools
@@ -16,33 +16,31 @@ import Tools
 -- UPDATE
 -- ###################################################
 
-update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
-    case model.workflow of
-        Closed context ->
-            case msg of
-                KickedOut reason -> context.me |> kickedOut reason |> Tuple.mapFirst (Model model.errors)
-                Sync sync ->
-                    ( { model | workflow = (Closed (Model.sync sync context)) }
-                    , Error.timeError "Out of sync" |> Cmd.map ErrorMsg
-                    )
-                CitizenLeft citizen ->
-                    if citizen == context.me.id then
-                        ( { model | workflow = Guest "" "" }
-                        , Cmd.none )
-                    else
-                        ( Model.removeCitizen context citizen
-                            |> Closed
-                            |> Model model.errors
-                        , Cmd.none )
-                Start -> (model, start)
-                PollStarted ->
-                    ( Model.OpenModel (Model.reset context) Nothing
-                        |> Open
-                        |> Model model.errors
-                    , Cmd.none)
-                _ -> (model, Cmd.none)
-        _ -> (model, Cmd.none)
+update : Msg -> Context -> (Model.Workflow, Cmd Msg)
+update msg context =
+    case msg of
+        KickedOut reason -> context.me |> kickedOut reason
+        Sync state ->
+            ( Model.sync state context |> Model.Closed
+            , Error.timeError "Out of sync" |> Cmd.map ErrorMsg
+            )
+        CitizenLeft citizen ->
+            if citizen == context.me.id then
+                ( Model.Guest "" ""
+                , Cmd.none )
+            else
+                ( Model.removeCitizen context citizen |> Model.Closed
+                , Cmd.none )
+        NewCitizen citizen ->
+            ( Model.enlist context citizen |> Model.Closed
+            , Cmd.none )
+        Start -> (context |> Model.Closed, start)
+        PollStarted ->
+            ( Model.OpenModel (Model.reset context) Nothing |> Model.Open
+            , Cmd.none)
+        _ ->
+            ( context |> Model.Closed
+            , Cmd.none)
 
 start : Cmd Msg
 start =
