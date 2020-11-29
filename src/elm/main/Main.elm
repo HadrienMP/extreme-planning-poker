@@ -70,7 +70,6 @@ dispatch event =
         "citizenLeft" -> Sse.decodeData Json.Decode.string event |> Result.map CitizenLeft
         "sync" -> Sse.decodeData Common.stateDecoder event |> Result.map Sync
         "sseClosed" -> Ok <| KickedOut "Closed server-sent events connection"
-        "areYouAlive" -> Ok SendHeartbeat
         _ -> Err ("Unknown event type: " ++ event.kind)
 
 -- VIEW

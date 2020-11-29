@@ -21,21 +21,7 @@ update msg model =
     case model.workflow of
         Closed context ->
             case msg of
-                SendHeartbeat -> (model, Common.sendHeartbeat context)
-
                 KickedOut reason -> context.me |> kickedOut reason |> Tuple.mapFirst (Model model.errors)
-
-                HeartbeatResp (Err e) ->
-                    case e of
-                        Http.BadStatus _ ->
-                            context.me |> kickedOut "probably a server restart" |> Tuple.mapFirst (Model model.errors)
-                        _ ->
-                            ( model
-                            , Tools.httpErrorToString e
-                                |> Error.timeError
-                                |> Cmd.map ErrorMsg
-                            )
-
                 Sync sync ->
                     ( { model | workflow = (Closed (Model.sync sync context)) }
                     , Error.timeError "Out of sync" |> Cmd.map ErrorMsg

@@ -24,22 +24,7 @@ import Tools
 update : Msg -> Model.OpenModel -> (Model.Workflow, Cmd Msg)
 update msg open =
     case msg of
-        SendHeartbeat ->
-            ( Model.Open open, Common.sendHeartbeat open.context )
-
         KickedOut reason -> open.context.me |> kickedOut reason
-
-        HeartbeatResp (Err e) ->
-            case e of
-                Http.BadStatus _ ->
-                    open.context.me |> kickedOut "probably a server restart"
-                _ ->
-                    ( Model.Open open
-                    , Tools.httpErrorToString e
-                        |> Error.timeError
-                        |> Cmd.map ErrorMsg
-                    )
-
         Sync state ->
             ( { open | context = Model.sync state open.context } |> Model.Open
             , Error.timeError "Out of sync" |> Cmd.map ErrorMsg
