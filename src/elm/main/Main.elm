@@ -1,22 +1,21 @@
 port module Main exposing (..)
 
 import Browser
-import Common
 import Html exposing (..)
 import Json.Decode
-import Messages exposing (Msg(..))
+import Messages exposing (Msg(..), stateDecoder)
 import Model.Ballots as Ballots exposing (Ballots)
 import Error as Error
-import Model.Model as Model exposing (Model, Workflow(..))
+import Model.Model as Model exposing (Model, Poll(..), ConnectionState(..))
 import Model.Nation as Nation exposing (Citizen, Nation)
 import OtherHtml exposing (enlistForm)
 import Random
 import Sse exposing (EventKind)
-import Time
 import Tools exposing (fold)
-import Workflow.Closed as Closed
+import Workflow.Connected as Connected
 import Workflow.Guest as Guest
-import Workflow.Open as Open
+import Workflow.Poll.Closed as Closed
+import Workflow.Poll.Open as Open
 
 main =
     Browser.element
@@ -44,10 +43,11 @@ update msg model =
                 (\updated -> { model | errors = updated } )
                 (Cmd.map ErrorMsg)
         _ ->
-            case model.workflow of
-                Guest _ _  -> Guest.update msg model
-                Model.Open open -> Open.update msg open |> Tuple.mapFirst (Model model.errors)
-                Closed closed -> Closed.update msg closed |> Tuple.mapFirst (Model model.errors)
+            ( case model.connectionState of
+                 Guest id name  -> Guest.update msg id name
+                 Connected context other -> Connected.update msg context other
+            )
+            |> Tuple.mapFirst (Model model.errors)
 
 
 -- SUBSCRIPTIONS
@@ -68,7 +68,7 @@ dispatch event =
         "pollClosed" -> Ok PollClosed
         "pollStarted" -> Ok PollStarted
         "citizenLeft" -> Sse.decodeData Json.Decode.string event |> Result.map CitizenLeft
-        "sync" -> Sse.decodeData Common.stateDecoder event |> Result.map Sync
+        "sync" -> Sse.decodeData stateDecoder event |> Result.map Sync
         "sseClosed" -> Ok <| KickedOut "Closed server-sent events connection"
         _ -> Err ("Unknown event type: " ++ event.kind)
 
@@ -79,8 +79,8 @@ view model =
         ( [ h1 [] [text "Extreme Poker Planning"]
           , Error.view model.errors |> Html.map ErrorMsg
           ]
-          ++ case model.workflow of
+          ++ case model.connectionState of
             Guest _ guest -> [ enlistForm guest]
-            Model.Open _ -> Open.view model
-            Closed _ -> Closed.view model
+            Model.Connected _ (Open _) -> Open.view model
+            Model.Connected _ Closed -> Closed.view model
         )

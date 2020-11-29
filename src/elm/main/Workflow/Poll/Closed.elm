@@ -1,46 +1,32 @@
-module Workflow.Closed exposing (..)
-import Common exposing (kickedOut)
+module Workflow.Poll.Closed exposing (..)
+
 import Http
 import Model.Ballots as Ballots exposing (Ballots)
+import Model.Context exposing (Context, reset)
 import Model.Deck as Deck exposing (Card, Deck)
 import Messages exposing (Msg(..))
 import Html exposing (..)
 import Html.Attributes exposing (id)
-import Error as Error
-import Model.Model as Model exposing (Context, Model, Workflow(..))
+import Model.Model as Model exposing (Model, Poll(..), ConnectionState(..))
 import Model.Nation as Nation exposing (Citizen, Nation, citizenHtml)
 import OtherHtml exposing (startButton)
-import Tools
 
 -- ###################################################
 -- UPDATE
 -- ###################################################
 
-update : Msg -> Context -> (Model.Workflow, Cmd Msg)
+update : Msg -> Context -> (Model.ConnectionState, Cmd Msg)
 update msg context =
     case msg of
-        KickedOut reason -> context.me |> kickedOut reason
-        Sync state ->
-            ( Model.sync state context |> Model.Closed
-            , Error.timeError "Out of sync" |> Cmd.map ErrorMsg
-            )
-        CitizenLeft citizen ->
-            if citizen == context.me.id then
-                ( Model.Guest "" ""
-                , Cmd.none )
-            else
-                ( Model.removeCitizen context citizen |> Model.Closed
-                , Cmd.none )
-        NewCitizen citizen ->
-            ( Model.enlist context citizen |> Model.Closed
-            , Cmd.none )
-        Start -> (context |> Model.Closed, start)
+        Start ->
+            ( Connected context Closed
+            , start )
         PollStarted ->
-            ( Model.OpenModel (Model.reset context) Nothing |> Model.Open
-            , Cmd.none)
+            ( Connected (reset context) (Open Nothing)
+            , Cmd.none )
         _ ->
-            ( context |> Model.Closed
-            , Cmd.none)
+            ( Connected context Closed
+            , Cmd.none )
 
 start : Cmd Msg
 start =
@@ -56,8 +42,8 @@ start =
 
 view : Model -> List (Html Msg)
 view model =
-    case model.workflow of
-        Closed context ->
+    case model.connectionState of
+        Connected context Closed ->
             [ div [id "nation"]
                   (  ballotsHtml context.nation context.ballots context.deck
                   ++ [ startButton ]

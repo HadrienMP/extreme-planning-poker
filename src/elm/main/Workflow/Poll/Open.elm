@@ -1,12 +1,11 @@
-module Workflow.Open exposing (..)
+module Workflow.Poll.Open exposing (..)
 
-import Common exposing (kickedOut)
 import Http
 import Model.Ballots as Ballots exposing (Ballot, hasVoted, Ballots)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(..))
-import Error as Error exposing (timeError)
-import Model.Model as Model exposing (Model)
+import Model.Context as Context exposing (Context)
+import Model.Model as Model exposing (Model, Poll(..))
 import Model.Nation as Nation exposing (..)
 import Model.Deck exposing (Card, Deck, cardHtml2)
 import Messages exposing (Msg(..))
@@ -14,58 +13,35 @@ import Html exposing (..)
 import Html.Attributes exposing (class, classList, id)
 import Model.Nation exposing (Citizen, Nation)
 import OtherHtml exposing (closeButton)
-import Tools
 
 
 -- ###################################################
 -- UPDATE
 -- ###################################################
 
-update : Msg -> Model.OpenModel -> (Model.Workflow, Cmd Msg)
-update msg open =
+update : Msg -> Context -> Maybe Ballot -> (Model.ConnectionState, Cmd Msg)
+update msg context ballot =
     case msg of
-        KickedOut reason -> open.context.me |> kickedOut reason
-        Sync state ->
-            ( { open | context = Model.sync state open.context } |> Model.Open
-            , Error.timeError "Out of sync" |> Cmd.map ErrorMsg
-            )
-
-        CitizenLeft citizen ->
-            if citizen == open.context.me.id then
-                ( Model.Guest "" ""
-                , Cmd.none )
-            else
-                ( { open | context = Model.removeCitizen open.context citizen }
-                    |> Model.Open
-                , Cmd.none )
-        NewCitizen citizen ->
-            ( { open | context = Model.enlist open.context citizen }
-                |> Model.Open
-            , Cmd.none )
         Vote newBallot ->
-            ( { open | ballot = Just newBallot }
-                |> Model.Open
+            ( Model.Connected context (Open (Just newBallot))
             , vote newBallot)
         VoteAccepted newBallot ->
-            ( { open | context =  Model.vote open.context newBallot }
-                |> Model.Open
+            ( Model.Connected (Context.vote context newBallot) (Open ballot)
             , Cmd.none)
         Cancel citizen ->
-            ( { open | ballot = Nothing }
-                |> Model.Open
+            ( Model.Connected context (Open Nothing)
             , cancelVote citizen)
         VoteCancelled citizen ->
-            ( { open | context =  Model.cancelVote open.context citizen, ballot = Nothing }
-                |> Model.Open
+            ( Model.Connected (Context.cancelVote context citizen) (Open ballot)
             , Cmd.none)
         Close ->
-            ( Model.Open open
+            ( Model.Connected context (Open ballot)
             , close)
         PollClosed ->
-            ( Model.Closed open.context
+            ( Model.Connected context Closed
             , Cmd.none)
         _ ->
-            ( Model.Open open
+            ( Model.Connected context (Open ballot)
             , Cmd.none)
 
 
@@ -99,13 +75,13 @@ close =
 
 view : Model -> List (Html Msg)
 view model =
-    case model.workflow of
-        Model.Open open ->
+    case model.connectionState of
+        Model.Connected context (Open ballot) ->
             [ div [id "nation"]
-                  (  votersHtml open.context.nation open.context.ballots
+                  (  votersHtml context.nation context.ballots
                   ++ [closeButton]
                   )
-            , deckHtml open.context.deck open.context.me open.ballot]
+            , deckHtml context.deck context.me ballot]
         _ -> []
 
 votersHtml : Nation -> Ballots -> List (Html Msg)

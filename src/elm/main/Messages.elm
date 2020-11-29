@@ -1,9 +1,10 @@
 module Messages exposing (..)
 
 import Http
-import Model.Ballots exposing (Ballot, Ballots)
+import Json.Decode
+import Model.Ballots as Ballots exposing (Ballot, Ballots)
 import Error as Error
-import Model.Nation exposing (Citizen, CitizenId, Nation)
+import Model.Nation as Nation exposing (Citizen, CitizenId, Nation)
 import Time exposing (Posix)
 
 type alias State =
@@ -11,9 +12,16 @@ type alias State =
     , ballots : Ballots
     }
 
+
+stateDecoder : Json.Decode.Decoder State
+stateDecoder =
+    Json.Decode.map2
+        State
+        (Json.Decode.field "voters" Nation.decoder)
+        (Json.Decode.field "votes" Ballots.decoder)
+
 type Msg
     = CmdResp (Result Http.Error ())
-    | HeartbeatResp (Result Http.Error ())
     | Sync State
     | KickedOut String
 
