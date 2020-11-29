@@ -1,4 +1,4 @@
-import {Nation} from "../nation-domain";
+import {Nation} from "../nation/domain";
 import {List, Map} from "immutable";
 import {Md5} from "ts-md5";
 import {CitizenId, findCitizenById} from "../voters/domain";

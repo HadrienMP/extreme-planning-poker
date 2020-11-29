@@ -52,9 +52,7 @@ update msg model =
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
-subscriptions _ = Sub.batch
-    [ messageReceiver handleEvent
-    ]
+subscriptions _ = messageReceiver handleEvent
 
 handleEvent : (EventKind, Json.Decode.Value) -> Msg
 handleEvent event =

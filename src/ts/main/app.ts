@@ -7,6 +7,7 @@ import * as bus from "./infra/bus"
 import * as nation from "./voters/routes";
 import * as poll from "./poll-api";
 import * as vote from "./votes/routes";
+import * as nationController from "./nation/controller";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use("/nation", nation.router);
 app.use("/poll", poll.router);
 app.use("/vote", vote.router);
 bus.init();
+nationController.init();
 
 
 const PORT = process.env.PORT || 3000;

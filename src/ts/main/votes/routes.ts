@@ -9,7 +9,7 @@ export const router = Router({strict: true});
 
 router.post('/', (req:Request, res: Response) => {
     let voteVar = parseVote(req.body);
-    vote(voteVar, nation.get())
+    vote(voteVar, nation.getNation())
         .onSuccess(nation.updateVotes)
         .onSuccess(_ => bus.publishFront("voteAccepted", voteVar))
         .onSuccess(_ => res.sendStatus(200))
@@ -19,7 +19,7 @@ router.post('/', (req:Request, res: Response) => {
 
 router.post('/cancel', (req, res) => {
     let person = parsePerson(req.body)
-    cancelVote(person.id, nation.get())
+    cancelVote(person.id, nation.getNation())
         .onSuccess(nation.updateVotes)
         .onSuccess(_ => bus.publishFront("voteCancelled", person))
         .onSuccess(_ => res.sendStatus(200))
