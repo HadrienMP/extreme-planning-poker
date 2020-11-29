@@ -11,11 +11,12 @@ import Model.Model as Model exposing (..)
 import Model.Nation as Nation exposing (Citizen)
 
 kickedOut : String -> Citizen -> (Workflow, Cmd Msg)
-kickedOut reason citizen = ( Model.Guest citizen.id citizen.name
-                    , "You were kicked out by the server (" ++ reason ++ ")"
-                        |> Error.timeError
-                        |> Cmd.map ErrorMsg
-                    )
+kickedOut reason citizen =
+    ( Model.Guest citizen.id citizen.name
+    , "You were kicked out by the server (" ++ reason ++ ")"
+        |> Error.timeError
+        |> Cmd.map ErrorMsg
+    )
 
 stateDecoder : Json.Decode.Decoder Messages.State
 stateDecoder =
